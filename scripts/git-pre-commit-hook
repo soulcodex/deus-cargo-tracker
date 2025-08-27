@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+echo "🔧 Running pre-commit hook..."
+
+export PATH="/usr/local/go/bin:$PATH"
+export PATH="$HOME/go/bin:$PATH"
+
+if ! command -v just > /dev/null; then
+  echo "❌ 'just' is not installed. Please install it to proceed."
+  exit 1
+fi
+
+# Run the lint command from just
+just lint
+
+echo "✅ Pre-commit hook completed."

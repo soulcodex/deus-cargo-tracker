@@ -1,0 +1,223 @@
+version: "2"
+run:
+  allow-parallel-runners: true
+  relative-path-mode: wd
+linters:
+  default: none
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - containedctx
+    - copyloopvar
+    - cyclop
+    - dupl
+    - durationcheck
+    - errcheck
+    - errname
+    - errorlint
+    - exhaustive
+    - fatcontext
+    - forbidigo
+    - funlen
+    - gocheckcompilerdirectives
+    - gochecknoinits
+    - gochecksumtype
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - govet
+    - grouper
+    - ineffassign
+    - interfacebloat
+    - intrange
+    - lll
+    - loggercheck
+    - makezero
+    - mirror
+    - mnd
+    - musttag
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - perfsprint
+    - predeclared
+    - promlinter
+    - protogetter
+    - reassign
+    - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
+    - staticcheck
+    - testableexamples
+    - testifylint
+    - testpackage
+    - tparallel
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+    - wrapcheck
+
+  settings:
+    cyclop:
+      max-complexity: 10
+      package-average: 10
+    errcheck:
+      check-type-assertions: true
+    exhaustive:
+      check:
+        - switch
+        - map
+    wrapcheck:
+      ignore-sig-regexps:
+        - ^net/http\..*$
+        - ^os\..*$
+        - ^github.com/spf13/cobra\..*$
+        - ^github.com/stretchr/testify/mock\..*$
+        - ^github.com/testcontainers/testcontainers-go\..*$
+        - ^golang.org/x/tools/go/analysis\..*$
+        - ^google.golang.org/protobuf\..*$
+        - ^gopkg.in/yaml.v3\..*$
+        - ^github.com/golang/protobuf/proto\..*$
+        - ^github.com/golang/protobuf/ptypes\..*$
+        - ^github.com/golang/protobuf/ptypes/any\..*$
+        - ^github.com/golang/protobuf/ptypes/duration\..*$
+        - ^github.com/golang/protobuf/ptypes/empty\..*$
+        - ^github.com/golang/protobuf/ptypes/struct\..*$
+        - ^github.com/golang/protobuf/ptypes/timestamp\..*$
+        - ^github.com/golang/protobuf/ptypes/wrappers\..*$
+      ignore-interface-regexps:
+        - ^github.com/prometheus/client_golang\..*$
+
+    funlen:
+      lines: 60
+      statements: 40
+      ignore-comments: true
+    gocognit:
+      min-complexity: 15
+    gocritic:
+      settings:
+        captLocal:
+          paramsOnly: false
+        underef:
+          skipRecvDeref: false
+    gomodguard:
+      blocked:
+        modules:
+          - github.com/golang/protobuf:
+              recommendations:
+                - google.golang.org/protobuf
+              reason: see https://developers.google.com/protocol-buffers/docs/reference/go/faq#modules
+          - github.com/satori/go.uuid:
+              recommendations:
+                - github.com/google/uuid
+              reason: satori's package is not maintained
+          - github.com/gofrs/uuid:
+              recommendations:
+                - github.com/gofrs/uuid/v5
+              reason: gofrs' package was not go module before v5
+    govet:
+      disable:
+        - fieldalignment
+      enable-all: true
+      settings:
+        shadow:
+          strict: true
+    inamedparam:
+      skip-single-param: true
+    interfacebloat:
+      max: 5
+    lll:
+      line-length: 140
+    mnd:
+      ignored-functions:
+        - args.Error
+        - flag.Arg
+        - flag.Duration.*
+        - flag.Float.*
+        - flag.Int.*
+        - flag.Uint.*
+        - os.Chmod
+        - os.Mkdir.*
+        - os.OpenFile
+        - os.WriteFile
+        - prometheus.ExponentialBuckets.*
+        - prometheus.LinearBuckets
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+      allow-no-explanation:
+        - funlen
+        - gocognit
+        - lll
+    perfsprint:
+      strconcat: false
+    rowserrcheck:
+      packages:
+        - github.com/jmoiron/sqlx
+    sloglint:
+      no-global: all
+      context: scope
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - errname
+        path: (errutil/.+.go|domain/.+.go)
+      - path: "internal/.*/application/.*/.*"
+        linters:
+          - dupl
+      - linters:
+          - funlen
+          - gocognit
+          - gocyclo
+          - gosec
+          - lll
+          - staticcheck
+          - testpackage
+          - unparam
+          - unused
+          - exhaustruct
+          - containedctx
+        source: "golangci-lint:default"
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+      - ".*mock\\.go$" # Ignored due to generated code by testify/mock or moq
+      - ".*_gen\\.go$" # Ignored due to generated code by wire or protobuf
+      - ".*_test\\.go$" # Ignored due to test files
+      - ".*_test_suite\\.go$" # Ignored due to test suite files
+issues:
+  max-same-issues: 50
+formatters:
+  enable:
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

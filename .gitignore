@@ -1,0 +1,17 @@
+# Ignore files and directories that should not be tracked by Git
+
+# IDE's and editor settings
+.idea
+.env
+.test.env
+NOTES.md
+.DS_Store
+.vscode/settings.json
+
+# Terraform
+*.terraform*
+local.auto.tfvars
+
+# Go
+go.work
+__debug**

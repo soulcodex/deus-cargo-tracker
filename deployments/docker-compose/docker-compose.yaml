@@ -1,0 +1,23 @@
+name: deus-cargo-tracker
+
+include:
+  - storage.docker-compose.yaml
+  - messaging.docker-compose.yaml
+
+services:
+  api:
+    restart: unless-stopped
+    build:
+      context: ../../
+      dockerfile: ./build/api/Dockerfile
+    volumes:
+      - ../../deployments/docker-compose/.cargo-tracker-api.env:/app/cargo-tracker-api/.env
+    ports:
+      - "8080:8080" # HTTP
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .cargo-tracker-api.env
