@@ -11,7 +11,7 @@ import (
 )
 
 type VesselModule struct {
-	repository vesseldomain.VesselRepository
+	Repository vesseldomain.VesselRepository
 }
 
 func NewVesselModule(_ context.Context, common *CommonServices) *VesselModule {
@@ -30,6 +30,6 @@ func NewVesselModule(_ context.Context, common *CommonServices) *VesselModule {
 	bus.MustRegister(common.QueryBus, &vesselqueries.FetchVesselByID{}, fetchVesselByIDHandler)
 
 	return &VesselModule{
-		repository: vesselRepo,
+		Repository: vesselRepo,
 	}
 }
