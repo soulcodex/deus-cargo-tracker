@@ -76,6 +76,21 @@ down:
     	-f ./deployments/docker-compose/docker-compose.yaml \
     	down --remove-orphans --volumes
 
+# create new sql migration
+new-migration:
+    [ ! -f .env ] || export $(grep -v '^#' .env | xargs) && \
+    sql-migrate new -config $(pwd)/migrations/dbconfig.yaml
+
+# run sql migrations
+migrate-up:
+    [ ! -f .env ] || export $(grep -v '^#' .env | xargs) && \
+    sql-migrate up -config $(pwd)/migrations/dbconfig.yaml
+
+# rollback sql migrations
+migrate-down:
+    [ ! -f .env ] || export $(grep -v '^#' .env | xargs) && \
+    sql-migrate down -config $(pwd)/migrations/dbconfig.yaml
+
 # Generate go code from go:generate directives.
 go-generate:
     go generate ./...

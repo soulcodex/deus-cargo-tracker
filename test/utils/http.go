@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	httpserver "github.com/soulcodex/deus-cargoes-tracker/pkg/http-server"
+	httpserver "github.com/soulcodex/deus-cargo-tracker/pkg/http-server"
 )
 
 func ExecuteJSONRequest(

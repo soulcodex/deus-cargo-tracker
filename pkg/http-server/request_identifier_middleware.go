@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/utils"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/utils"
 )
 
 type ctxKeyRequestID struct{}

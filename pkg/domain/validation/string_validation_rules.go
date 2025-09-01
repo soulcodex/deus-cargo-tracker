@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/utils"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/utils"
 )
 
 var (

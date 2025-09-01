@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/retry"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/retry"
 
 	"github.com/go-redsync/redsync/v4"
 	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/logger"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/logger"
 )
 
 const mutexName = "distributed-sync-mutex"

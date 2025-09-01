@@ -7,7 +7,7 @@ import (
 	"context"
 	"sync"
 
-	distributedsync "github.com/soulcodex/deus-cargoes-tracker/pkg/distributed-sync"
+	distributedsync "github.com/soulcodex/deus-cargo-tracker/pkg/distributed-sync"
 )
 
 // Ensure, that MutexServiceMock does implement distributedsync.MutexService.

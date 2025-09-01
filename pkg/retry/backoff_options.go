@@ -5,7 +5,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/logger"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/logger"
 )
 
 const (

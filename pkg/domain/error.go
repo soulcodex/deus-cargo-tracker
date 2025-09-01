@@ -3,7 +3,7 @@ package domain
 import (
 	"fmt"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/errutil"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 )
 
 // BaseError is the base domain error interface for all errors in the project.

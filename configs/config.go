@@ -20,10 +20,15 @@ type PostgresConfig struct {
 	PostgresUser   string `env:"USER" envDefault:"cargo_tracker_role"`
 	PostgresPass   string `env:"PASSWORD" envDefault:"cargo_tracker_pass"`
 	PostgresHost   string `env:"HOST" envDefault:"localhost"`
-	PostgresPort   int    `env:"PORT" envDefault:"5432"`
+	PostgresPort   uint16 `env:"PORT" envDefault:"5432"`
 	PostgresDB     string `env:"DB" envDefault:"cargo_tracker"`
 	PostgresSchema string `env:"SCHEMA" envDefault:"cargo_tracker"`
 	PostgresSSL    string `env:"SSL_MODE" envDefault:"disable"`
+}
+
+type DBMigrationsConfig struct {
+	MigrationsPath  string `env:"PATH" envDefault:"./migrations"`
+	MigrationsTable string `env:"TABLE_NAME" envDefault:"migrations"`
 }
 
 type HTTPConfig struct {
@@ -34,13 +39,15 @@ type HTTPConfig struct {
 }
 
 type UncategorizedConfig struct {
-	LogLevel string `env:"LOG_LEVEL" envDefault:"debug"`
+	JSONSchemaPath string `env:"JSON_SCHEMA_PATH" envDefault:"./schemas"`
+	LogLevel       string `env:"LOG_LEVEL" envDefault:"debug"`
 }
 type Config struct {
 	AppConfig           `envPrefix:"APP_"`
 	HTTPConfig          `envPrefix:"HTTP_"`
 	RedisConfig         `envPrefix:"REDIS_"`
 	PostgresConfig      `envPrefix:"POSTGRES_"`
+	DBMigrationsConfig  `envPrefix:"MIGRATIONS_"`
 	UncategorizedConfig `envPrefix:""`
 }
 

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/errutil"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 )
 
 func TestNewCriticalError(t *testing.T) {

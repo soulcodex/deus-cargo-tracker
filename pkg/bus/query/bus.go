@@ -1,7 +1,7 @@
 package querybus
 
 import (
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/bus"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/bus"
 )
 
 type Bus = bus.Bus

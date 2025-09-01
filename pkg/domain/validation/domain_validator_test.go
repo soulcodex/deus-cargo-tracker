@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	domainvalidation "github.com/soulcodex/deus-cargoes-tracker/pkg/domain/validation"
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/utils"
+	domainvalidation "github.com/soulcodex/deus-cargo-tracker/pkg/domain/validation"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/utils"
 )
 
 func TestDomainValidatorWithStringConstraints(t *testing.T) {

@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/bus"
-	dsync "github.com/soulcodex/deus-cargoes-tracker/pkg/distributed-sync"
-	distributedsyncmock "github.com/soulcodex/deus-cargoes-tracker/pkg/distributed-sync/mock"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/bus"
+	dsync "github.com/soulcodex/deus-cargo-tracker/pkg/distributed-sync"
+	distributedsyncmock "github.com/soulcodex/deus-cargo-tracker/pkg/distributed-sync/mock"
 )
 
 type FakeResponse struct {

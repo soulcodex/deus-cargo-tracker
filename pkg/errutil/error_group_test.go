@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/errutil"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 	"github.com/stretchr/testify/assert"
 )
 

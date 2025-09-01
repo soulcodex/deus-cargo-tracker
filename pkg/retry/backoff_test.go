@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/retry"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/retry"
 )
 
 var _ retry.OnRetryHook = nil // ensure type exists

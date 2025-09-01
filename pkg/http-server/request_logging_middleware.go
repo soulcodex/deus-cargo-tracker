@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/logger"
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/utils"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/logger"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/utils"
 )
 
 type RequestLoggingMiddleware struct {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/logger"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/logger"
 )
 
 type PanicRecoverMiddleware struct {

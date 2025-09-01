@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/oklog/ulid/v2"
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/errutil"
+
+	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 )
 
 type ULID string

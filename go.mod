@@ -1,11 +1,13 @@
-module github.com/soulcodex/deus-cargoes-tracker
+module github.com/soulcodex/deus-cargo-tracker
 
 go 1.24.4
 
 require (
+	github.com/Masterminds/squirrel v1.5.4
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/go-redsync/redsync/v4 v4.13.0
+	github.com/google/jsonapi v1.0.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.5.1
@@ -28,6 +30,8 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
+	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

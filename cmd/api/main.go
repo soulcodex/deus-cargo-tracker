@@ -7,7 +7,7 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
-	"github.com/soulcodex/deus-cargoes-tracker/cmd/di"
+	"github.com/soulcodex/deus-cargo-tracker/cmd/di"
 )
 
 func main() {
@@ -15,6 +15,14 @@ func main() {
 	defer cancel()
 
 	common := di.MustInitCommonServices(ctx)
+	_ = di.NewVesselModule(ctx, common) // for practical purposes only
+
+	migrationsApplied, err := common.DBMigrator.Up()
+	if err != nil {
+		common.Logger.Fatal().Err(err).Msg("failed to apply database migrations")
+		panic(err)
+	}
+	common.Logger.Info().Int("count", migrationsApplied).Msg("database migrations applied successfully")
 
 	go func() {
 		common.Logger.Info().

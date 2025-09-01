@@ -1,7 +1,7 @@
 package distributedsync
 
 import (
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/errutil"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 )
 
 const (

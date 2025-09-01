@@ -6,25 +6,32 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/soulcodex/deus-cargoes-tracker/configs"
-	eventbus "github.com/soulcodex/deus-cargoes-tracker/pkg/bus/event"
-	querybus "github.com/soulcodex/deus-cargoes-tracker/pkg/bus/query"
-	distributedsync "github.com/soulcodex/deus-cargoes-tracker/pkg/distributed-sync"
-	httpserver "github.com/soulcodex/deus-cargoes-tracker/pkg/http-server"
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/logger"
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/utils"
+	"github.com/soulcodex/deus-cargo-tracker/configs"
+	commandbus "github.com/soulcodex/deus-cargo-tracker/pkg/bus/command"
+	eventbus "github.com/soulcodex/deus-cargo-tracker/pkg/bus/event"
+	querybus "github.com/soulcodex/deus-cargo-tracker/pkg/bus/query"
+	distributedsync "github.com/soulcodex/deus-cargo-tracker/pkg/distributed-sync"
+	httpserver "github.com/soulcodex/deus-cargo-tracker/pkg/http-server"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/logger"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/sqldb"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/utils"
 )
 
 type CommonServices struct {
-	Config       *configs.Config
-	Logger       logger.ZerologLogger
-	RedisClient  *redis.Client
-	EventBus     eventbus.Bus
-	QueryBus     querybus.Bus
-	Mutex        distributedsync.MutexService
-	Router       *httpserver.Router
-	UUIDProvider utils.UUIDProvider
-	TimeProvider utils.DateTimeProvider
+	Config             *configs.Config
+	DBPool             sqldb.ConnectionPool
+	DBMigrator         sqldb.Migrator
+	ResponseMiddleware *httpserver.JSONAPIResponseMiddleware
+	Logger             logger.ZerologLogger
+	RedisClient        *redis.Client
+	EventBus           eventbus.Bus
+	CommandBus         commandbus.Bus
+	QueryBus           querybus.Bus
+	Mutex              distributedsync.MutexService
+	Router             *httpserver.Router
+	UUIDProvider       utils.UUIDProvider
+	ULIDProvider       utils.ULIDProvider
+	TimeProvider       utils.DateTimeProvider
 }
 
 func MustInitCommonServices(ctx context.Context) *CommonServices {
@@ -49,32 +56,33 @@ func MustInitCommonServices(ctx context.Context) *CommonServices {
 
 	redisClient := redis.NewClient(redisOpts)
 
-	routerOpts := []httpserver.RouterConfigFunc{
-		httpserver.WithHost(cfg.HTTPHost),
-		httpserver.WithPort(cfg.HTTPPort),
-		httpserver.WithReadTimeoutSeconds(cfg.HTTPReadTimeout),
-		httpserver.WithWriteTimeoutSeconds(cfg.HTTPWriteTimeout),
-		httpserver.WithMiddleware(httpserver.NewPanicRecoverMiddleware(appLogger).Middleware),
-		httpserver.WithMiddleware(httpserver.NewRequestLoggingMiddleware(appLogger, timeProvider).Middleware),
-		httpserver.WithCORSMiddleware(),
-	}
-	router := httpserver.New(routerOpts...)
+	router := initHTTPRouter(ctx, appLogger, timeProvider, cfg)
+	dbPool := initPostgresDBPool(ctx, cfg)
+	dbMigrator := initSQLMigrator(ctx, cfg, dbPool)
 
 	eventBus := eventbus.InitEventBus()
 	queryBus := querybus.InitQueryBus()
+	commandBus := commandbus.InitCommandBus()
 	mutexService := distributedsync.NewRedisMutexService(redisClient, appLogger)
 	uuidProvider := utils.NewRandomUUIDProvider()
+	ulidProvider := utils.NewRandomULIDProvider()
+	responseMiddleware := httpserver.NewJSONAPIResponseMiddleware(appLogger)
 
 	return &CommonServices{
-		Config:       cfg,
-		Logger:       appLogger,
-		RedisClient:  redisClient,
-		EventBus:     eventBus,
-		QueryBus:     queryBus,
-		Mutex:        mutexService,
-		Router:       &router,
-		UUIDProvider: uuidProvider,
-		TimeProvider: timeProvider,
+		Config:             cfg,
+		Logger:             appLogger,
+		DBPool:             dbPool,
+		DBMigrator:         dbMigrator,
+		ResponseMiddleware: responseMiddleware,
+		RedisClient:        redisClient,
+		EventBus:           eventBus,
+		QueryBus:           queryBus,
+		CommandBus:         commandBus,
+		Mutex:              mutexService,
+		Router:             router,
+		UUIDProvider:       uuidProvider,
+		ULIDProvider:       ulidProvider,
+		TimeProvider:       timeProvider,
 	}
 }
 

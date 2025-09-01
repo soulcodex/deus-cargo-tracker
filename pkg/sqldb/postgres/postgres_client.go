@@ -9,7 +9,7 @@ import (
 	"go.nhat.io/otelsql"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/errutil"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 )
 
 const driver = "postgres"

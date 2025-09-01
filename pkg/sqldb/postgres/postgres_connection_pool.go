@@ -3,7 +3,7 @@ package postgres
 import (
 	"database/sql"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/sqldb"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/sqldb"
 )
 
 type ConnectionPool struct {

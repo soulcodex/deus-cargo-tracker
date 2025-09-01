@@ -3,8 +3,8 @@ package bus
 import (
 	"context"
 
-	dsync "github.com/soulcodex/deus-cargoes-tracker/pkg/distributed-sync"
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/errutil"
+	dsync "github.com/soulcodex/deus-cargo-tracker/pkg/distributed-sync"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 )
 
 type DispatchWithOutputFunc[Input Dto, Output any] func(context.Context, Input) (Output, error)

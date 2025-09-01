@@ -3,7 +3,7 @@ package utils
 import (
 	"github.com/google/uuid"
 
-	"github.com/soulcodex/deus-cargoes-tracker/pkg/errutil"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 )
 
 type UUID string
