@@ -15,7 +15,7 @@ func NewVesselAlreadyExistsError(id VesselID) *VesselAlreadyExistsError {
 	return &VesselAlreadyExistsError{
 		BaseError: domain.NewError(
 			vesselAlreadyExistsErrorMsg,
-			errutil.WithMetadataKeyValue("domain.error.vessel_id", id.String()),
+			errutil.WithMetadataKeyValue("domain.vesel.id", id.String()),
 		),
 	}
 }

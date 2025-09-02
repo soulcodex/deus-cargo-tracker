@@ -5,9 +5,8 @@ package vesseldomainmock
 
 import (
 	"context"
-	"sync"
-
 	"github.com/soulcodex/deus-cargo-tracker/internal/vessel/domain"
+	"sync"
 )
 
 // Ensure, that VesselRepositoryMock does implement vesseldomain.VesselRepository.
@@ -20,7 +19,7 @@ var _ vesseldomain.VesselRepository = &VesselRepositoryMock{}
 //
 //		// make and configure a mocked vesseldomain.VesselRepository
 //		mockedVesselRepository := &VesselRepositoryMock{
-//			FindFunc: func(ctx context.Context, id vesselshared.VesselID) (*vesseldomain.Vessel, error) {
+//			FindFunc: func(ctx context.Context, id vesseldomain.VesselID) (*vesseldomain.Vessel, error) {
 //				panic("mock out the Find method")
 //			},
 //			SaveFunc: func(ctx context.Context, v *vesseldomain.Vessel) error {

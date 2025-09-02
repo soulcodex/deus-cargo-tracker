@@ -17,7 +17,7 @@ func NewVesselNotExistsError(id VesselID) *VesselNotExistsError {
 	return &VesselNotExistsError{
 		BaseError: domain.NewError(
 			vesselNotFoundErrorMsg,
-			errutil.WithMetadataKeyValue("domain.error.vessel_id", id.String()),
+			errutil.WithMetadataKeyValue("domain.vessel.id", id.String()),
 		),
 	}
 }
