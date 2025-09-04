@@ -19,21 +19,26 @@ func TestCargoCreator_Create(t *testing.T) {
 	tests := []struct {
 		name          string
 		input         cargodomain.CargoCreateInput
-		setupMocks    func(repo *cargodomainmock.CargoRepositoryMock)
+		setupMocks    func(repo *cargodomainmock.CargoRepositoryMock, checker *cargodomainmock.CargoVesselCheckerMock)
 		expectedError string
 	}{
 		{
 			name: "should create cargo successfully",
 			input: cargodomain.CargoCreateInput{
-				ID: idProvider.New().String(),
+				ID:       idProvider.New().String(),
+				VesselID: idProvider.New().String(),
 				Items: []cargodomain.CargoItemInput{
 					{Name: "Fuel", Weight: 100},
 					{Name: "Supplies", Weight: 50},
 				},
+				At: timeProvider.Now(),
 			},
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock) {
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, checker *cargodomainmock.CargoVesselCheckerMock) {
+				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
+					return nil
+				}
 				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
-					return nil, nil // not found
+					return nil, nil
 				}
 				repo.SaveFunc = func(ctx context.Context, c *cargodomain.Cargo) error {
 					return nil
@@ -41,25 +46,53 @@ func TestCargoCreator_Create(t *testing.T) {
 			},
 		},
 		{
-			name: "should fail when cargo ID is invalid",
+			name: "should fail when vessel check fails",
 			input: cargodomain.CargoCreateInput{
-				ID: "!!!invalid-id###",
+				ID:       idProvider.New().String(),
+				VesselID: idProvider.New().String(),
 				Items: []cargodomain.CargoItemInput{
 					{Name: "Fuel", Weight: 100},
 				},
+				At: timeProvider.Now(),
 			},
-			setupMocks:    func(_ *cargodomainmock.CargoRepositoryMock) {}, // no repo interaction
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, checker *cargodomainmock.CargoVesselCheckerMock) {
+				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
+					return errors.New("vessel validation failed")
+				}
+			},
+			expectedError: "error checking vessel",
+		},
+		{
+			name: "should fail when cargo ID is invalid",
+			input: cargodomain.CargoCreateInput{
+				ID:       "!!!invalid-id###",
+				VesselID: idProvider.New().String(),
+				Items: []cargodomain.CargoItemInput{
+					{Name: "Fuel", Weight: 100},
+				},
+				At: timeProvider.Now(),
+			},
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, checker *cargodomainmock.CargoVesselCheckerMock) {
+				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
+					return nil
+				}
+			},
 			expectedError: "invalid cargo id",
 		},
 		{
 			name: "should fail if cargo already exists",
 			input: cargodomain.CargoCreateInput{
-				ID: idProvider.New().String(),
+				ID:       idProvider.New().String(),
+				VesselID: idProvider.New().String(),
 				Items: []cargodomain.CargoItemInput{
 					{Name: "Fuel", Weight: 100},
 				},
+				At: timeProvider.Now(),
 			},
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock) {
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, checker *cargodomainmock.CargoVesselCheckerMock) {
+				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
+					return nil
+				}
 				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
 					return &cargodomain.Cargo{}, nil
 				}
@@ -69,12 +102,17 @@ func TestCargoCreator_Create(t *testing.T) {
 		{
 			name: "should fail if find returns an error",
 			input: cargodomain.CargoCreateInput{
-				ID: idProvider.New().String(),
+				ID:       idProvider.New().String(),
+				VesselID: idProvider.New().String(),
 				Items: []cargodomain.CargoItemInput{
 					{Name: "Fuel", Weight: 100},
 				},
+				At: timeProvider.Now(),
 			},
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock) {
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, checker *cargodomainmock.CargoVesselCheckerMock) {
+				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
+					return nil
+				}
 				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
 					return nil, errors.New("db lookup failed")
 				}
@@ -84,12 +122,17 @@ func TestCargoCreator_Create(t *testing.T) {
 		{
 			name: "should fail when creating invalid items",
 			input: cargodomain.CargoCreateInput{
-				ID: idProvider.New().String(),
+				ID:       idProvider.New().String(),
+				VesselID: idProvider.New().String(),
 				Items: []cargodomain.CargoItemInput{
-					{Name: "", Weight: 0}, // invalid item
+					{Name: "", Weight: 0},
 				},
+				At: timeProvider.Now(),
 			},
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock) {
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, checker *cargodomainmock.CargoVesselCheckerMock) {
+				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
+					return nil
+				}
 				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
 					return nil, nil
 				}
@@ -99,22 +142,20 @@ func TestCargoCreator_Create(t *testing.T) {
 		{
 			name: "should fail when cargo exceed max items allowed",
 			input: cargodomain.CargoCreateInput{
-				ID: idProvider.New().String(),
+				ID:       idProvider.New().String(),
+				VesselID: idProvider.New().String(),
 				Items: []cargodomain.CargoItemInput{
-					{Name: "Fuel", Weight: 100},
-					{Name: "Food", Weight: 100},
-					{Name: "Oil", Weight: 100},
-					{Name: "Medicine", Weight: 100},
-					{Name: "Shampoo", Weight: 100},
-					{Name: "Soap", Weight: 100},
-					{Name: "Clothes", Weight: 100},
-					{Name: "Wine", Weight: 100},
-					{Name: "Whisky", Weight: 100},
-					{Name: "Fruit", Weight: 100},
-					{Name: "Toys", Weight: 100},
+					{Name: "A", Weight: 100}, {Name: "B", Weight: 100}, {Name: "C", Weight: 100},
+					{Name: "D", Weight: 100}, {Name: "E", Weight: 100}, {Name: "F", Weight: 100},
+					{Name: "G", Weight: 100}, {Name: "H", Weight: 100}, {Name: "I", Weight: 100},
+					{Name: "J", Weight: 100}, {Name: "K", Weight: 100}, // Exceeds limit
 				},
+				At: timeProvider.Now(),
 			},
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock) {
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, checker *cargodomainmock.CargoVesselCheckerMock) {
+				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
+					return nil
+				}
 				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
 					return nil, nil
 				}
@@ -124,12 +165,17 @@ func TestCargoCreator_Create(t *testing.T) {
 		{
 			name: "should fail if save returns an error",
 			input: cargodomain.CargoCreateInput{
-				ID: idProvider.New().String(),
+				ID:       idProvider.New().String(),
+				VesselID: idProvider.New().String(),
 				Items: []cargodomain.CargoItemInput{
 					{Name: "Fuel", Weight: 100},
 				},
+				At: timeProvider.Now(),
 			},
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock) {
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, checker *cargodomainmock.CargoVesselCheckerMock) {
+				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
+					return nil
+				}
 				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
 					return nil, nil
 				}
@@ -137,19 +183,21 @@ func TestCargoCreator_Create(t *testing.T) {
 					return errors.New("db error")
 				}
 			},
-			expectedError: "db error",
+			expectedError: "error saving cargo: db error",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &cargodomainmock.CargoRepositoryMock{}
+			checker := &cargodomainmock.CargoVesselCheckerMock{}
+
 			if tt.setupMocks != nil {
-				tt.setupMocks(repo)
+				tt.setupMocks(repo, checker)
 			}
 
-			creator := cargodomain.NewCargoCreator(repo)
-			cargo, err := creator.Create(ctx, tt.input, timeProvider.Now())
+			creator := cargodomain.NewCargoCreator(repo, checker)
+			cargo, err := creator.Create(ctx, tt.input)
 
 			if tt.expectedError != "" {
 				require.Error(t, err)

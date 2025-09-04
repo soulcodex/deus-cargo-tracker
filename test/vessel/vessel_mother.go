@@ -27,7 +27,7 @@ type VesselMother struct {
 
 func NewVesselMother(opts ...VesselMotherOpt) *VesselMother {
 	mother := &VesselMother{
-		primitives: newRocketPrimitives(),
+		primitives: newVesselPrimitives(),
 	}
 
 	for _, opt := range opts {
@@ -43,7 +43,7 @@ func (m *VesselMother) Build(t *testing.T) *vesseldomain.Vessel {
 	return vesseldomain.NewVesselFromPrimitives(m.primitives)
 }
 
-func newRocketPrimitives() vesseldomain.VesselPrimitives {
+func newVesselPrimitives() vesseldomain.VesselPrimitives {
 	at := time.Now()
 
 	const (

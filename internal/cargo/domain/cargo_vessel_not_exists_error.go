@@ -7,23 +7,23 @@ import (
 	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 )
 
-const cargoAlreadyExistsErrorMsg = "cargo already exists."
+const cargoVesselNotExistsErrorMsg = "cargo vessel does not exist."
 
-type CargoAlreadyExistsError struct {
+type CargoVesselNotExistsError struct {
 	domain.BaseError
 }
 
-func NewCargoAlreadyExistsError(id CargoID, vesselID VesselID) *CargoAlreadyExistsError {
-	return &CargoAlreadyExistsError{
+func NewCargoVesselNotExistsError(id CargoID, vesselID VesselID) *CargoVesselNotExistsError {
+	return &CargoVesselNotExistsError{
 		BaseError: domain.NewError(
-			cargoAlreadyExistsErrorMsg,
+			cargoVesselNotExistsErrorMsg,
 			errutil.WithMetadataKeyValue("domain.cargo.vessel_id", vesselID.String()),
 			errutil.WithMetadataKeyValue("domain.cargo.id", id.String()),
 		),
 	}
 }
 
-func IsCargoAlreadyExistsError(err error) bool {
-	var self *CargoAlreadyExistsError
+func IsCargoVesselNotExistsError(err error) bool {
+	var self *CargoVesselNotExistsError
 	return errors.As(err, &self)
 }

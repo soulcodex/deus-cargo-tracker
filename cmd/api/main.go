@@ -16,6 +16,7 @@ func main() {
 
 	common := di.MustInitCommonServices(ctx)
 	_ = di.NewVesselModule(ctx, common) // for practical purposes only
+	_ = di.NewCargoModule(ctx, common)  // for practical purposes only
 
 	migrationsApplied, err := common.DBMigrator.Up()
 	if err != nil {
