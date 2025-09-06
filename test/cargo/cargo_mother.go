@@ -21,6 +21,13 @@ func WithVesselID(id string) CargoMotherOpt {
 	}
 }
 
+func WithTimestamps(createdAt, updatedAt time.Time) CargoMotherOpt {
+	return func(m *CargoMother) {
+		m.primitives.CreatedAt = createdAt
+		m.primitives.UpdatedAt = updatedAt
+	}
+}
+
 func WithSoftDeletion(at time.Time) CargoMotherOpt {
 	return func(m *CargoMother) {
 		m.primitives.DeletedAt = &at

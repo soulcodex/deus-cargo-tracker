@@ -1,6 +1,7 @@
 package cargodomain
 
 import (
+	"context"
 	"time"
 )
 
@@ -55,18 +56,24 @@ func (c *Cargo) VesselID() VesselID {
 	return c.vesselID
 }
 
-func (c *Cargo) AppendItem(item Item, at time.Time) error {
-	if !c.status.IsPending() || c.deletedAt != nil {
-		return NewCargoNotModifiableError(c.id, c.status)
+func (c *Cargo) Update(
+	_ context.Context,
+	at time.Time,
+	updates ...CargoUpdateOpt,
+) error {
+	if c.updatedAt.After(at) {
+		return nil
 	}
 
-	items, err := NewItems(append(c.items, item)...)
-	if err != nil {
-		return err
+	if isDeleted := c.deletedAt != nil; isDeleted {
+		return NewCargoNotModifiableError(c.id, c.status, isDeleted)
 	}
 
-	c.items = items
-	c.updatedAt = at
+	for _, update := range updates {
+		if updateErr := update(c); updateErr != nil {
+			return updateErr
+		}
+	}
 
 	return nil
 }

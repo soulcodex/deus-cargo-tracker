@@ -11,12 +11,13 @@ type CargoNotModifiableError struct {
 	domain.BaseError
 }
 
-func NewCargoNotModifiableError(id CargoID, status Status) *CargoNotModifiableError {
+func NewCargoNotModifiableError(id CargoID, status Status, isDeleted bool) *CargoNotModifiableError {
 	return &CargoNotModifiableError{
 		BaseError: domain.NewError(
 			cargoNotModifiableErrorMsg,
 			errutil.WithMetadataKeyValue("domain.cargo.id", id.String()),
 			errutil.WithMetadataKeyValue("domain.cargo.status", status.String()),
+			errutil.WithMetadataKeyValue("domain.cargo.deleted", isDeleted),
 		),
 	}
 }
