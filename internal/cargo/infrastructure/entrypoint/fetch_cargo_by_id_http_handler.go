@@ -3,7 +3,6 @@ package cargoentrypoint
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/soulcodex/deus-cargo-tracker/pkg/bus"
 	querybus "github.com/soulcodex/deus-cargo-tracker/pkg/bus/query"
 	httpserver "github.com/soulcodex/deus-cargo-tracker/pkg/http-server"
+	jsonapi "github.com/soulcodex/deus-cargo-tracker/pkg/json-api"
 	jsonapiresponse "github.com/soulcodex/deus-cargo-tracker/pkg/json-api/response"
 )
 
@@ -22,10 +22,10 @@ type FetchCargoByIDResponse struct {
 		Name   string `json:"name"`
 		Weight uint64 `json:"weight"`
 	} `jsonapi:"attr,items"`
-	Status    string    `jsonapi:"attr,status"`
-	Weight    uint64    `jsonapi:"attr,weight"`
-	CreatedAt time.Time `jsonapi:"attr,created_at"`
-	UpdatedAt time.Time `jsonapi:"attr,updated_at"`
+	Status    string               `jsonapi:"attr,status"`
+	Weight    uint64               `jsonapi:"attr,weight"`
+	CreatedAt *jsonapi.RFC3339Time `jsonapi:"attr,created_at"`
+	UpdatedAt *jsonapi.RFC3339Time `jsonapi:"attr,updated_at"`
 }
 
 func newFetchCargoByIDResponse(resp cargoqueries.CargoResponse) *FetchCargoByIDResponse {
@@ -43,14 +43,16 @@ func newFetchCargoByIDResponse(resp cargoqueries.CargoResponse) *FetchCargoByIDR
 		}
 	}
 
+	createdAt, updatedAt := jsonapi.RFC3339Time(resp.CreatedAt), jsonapi.RFC3339Time(resp.UpdatedAt)
+
 	return &FetchCargoByIDResponse{
 		ID:        resp.ID,
 		VesselID:  resp.VesselID,
 		Items:     items,
 		Status:    resp.Status,
 		Weight:    resp.Weight,
-		CreatedAt: resp.CreatedAt,
-		UpdatedAt: resp.UpdatedAt,
+		CreatedAt: &createdAt,
+		UpdatedAt: &updatedAt,
 	}
 }
 
