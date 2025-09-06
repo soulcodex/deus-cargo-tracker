@@ -83,7 +83,7 @@ func (suite *CreateCargoAcceptanceTestSuite) TestCreateCargo_Success() {
 		}
 	`, suite.vesselID.String()))
 	response := testutils.ExecuteJSONRequest(suite.T(), suite.common.Router, http.MethodPost, "/cargoes", body)
-	suite.Equal(http.StatusNoContent, response.Code, "Expected status code 400 Bad Request")
+	suite.Equal(http.StatusNoContent, response.Code, "Expected status code 204 No Content")
 }
 
 func (suite *CreateCargoAcceptanceTestSuite) TestCreateCargo_FailIfAlreadyExists() {
@@ -104,7 +104,7 @@ func (suite *CreateCargoAcceptanceTestSuite) TestCreateCargo_FailIfAlreadyExists
 		}
 	`, suite.cargoID.String(), suite.vesselID.String()))
 	response := testutils.ExecuteJSONRequest(suite.T(), suite.common.Router, http.MethodPost, "/cargoes", body)
-	suite.Equal(http.StatusConflict, response.Code, "Expected status code 409 Bad Request")
+	suite.Equal(http.StatusConflict, response.Code, "Expected status code 409 Conflict")
 }
 
 func (suite *CreateCargoAcceptanceTestSuite) TestCreateCargo_FailIfVesselNotFound() {
@@ -125,7 +125,7 @@ func (suite *CreateCargoAcceptanceTestSuite) TestCreateCargo_FailIfVesselNotFoun
 		}
 	`, suite.cargoID.String(), suite.common.ULIDProvider.New().String()))
 	response := testutils.ExecuteJSONRequest(suite.T(), suite.common.Router, http.MethodPost, "/cargoes", body)
-	suite.Equal(http.StatusNotFound, response.Code, "Expected status code 409 Bad Request")
+	suite.Equal(http.StatusNotFound, response.Code, "Expected status code 404 Not Found")
 }
 
 func (suite *CreateCargoAcceptanceTestSuite) TestCreateCargo_FailIfCargoItemsExceedLimit() {
@@ -154,5 +154,5 @@ func (suite *CreateCargoAcceptanceTestSuite) TestCreateCargo_FailIfCargoItemsExc
 		}
 	`, suite.common.ULIDProvider.New().String(), suite.vesselID.String()))
 	response := testutils.ExecuteJSONRequest(suite.T(), suite.common.Router, http.MethodPost, "/cargoes", body)
-	suite.Equal(http.StatusBadRequest, response.Code, "Expected status code 409 Bad Request")
+	suite.Equal(http.StatusBadRequest, response.Code, "Expected status code 400 Bad Request")
 }
