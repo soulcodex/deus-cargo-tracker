@@ -41,8 +41,19 @@ func WithStatus(trackingID, status string, at time.Time) CargoUpdateOpt {
 		)
 		c.appendTracking(tracking)
 
+		event, err := NewCargoStatusUpdatedV1DomainEvent(
+			c.id,
+			c.status,
+			newStatus,
+			at,
+		)
+		if err != nil {
+			return ErrInvalidCargoOptionProvided.Wrap(err)
+		}
+
 		c.status = newStatus
 		c.updatedAt = at
+		c.RecordEvent(event)
 
 		return nil
 	}

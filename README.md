@@ -36,14 +36,6 @@ To install all project external dependencies and tools, run:
 just install
 ```
 
-## ▶️ Running the cargo tracker component locally
-
-To start the cargo tracker component service in local, execute the following command:
-
-```bash
-just run
-```
-
 ## 🐳 Running using a `docker-compose` stack
 
 To start the cargo tracker component using the **Docker Compose** stack provided, run:
@@ -56,6 +48,14 @@ To shut down the stack, use:
 
 ```bash
 just down
+```
+
+## ▶️ Running the cargo tracker component locally
+
+To start the cargo tracker component service in local, execute the following command:
+
+```bash
+just run
 ```
 
 > This executes the `docker-compose.yml` file located in `deployments/docker-compose/`.

@@ -11,6 +11,8 @@ import (
 
 	cargodomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain"
 	cargodomainmock "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain/mock"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/messaging"
+	messagingmock "github.com/soulcodex/deus-cargo-tracker/pkg/messaging/mock"
 	"github.com/soulcodex/deus-cargo-tracker/pkg/utils"
 	cargotest "github.com/soulcodex/deus-cargo-tracker/test/cargo"
 )
@@ -25,7 +27,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 		setupCargo    func() *cargodomain.Cargo
 		id            string
 		opts          []cargodomain.CargoUpdateOpt
-		setupMocks    func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo)
+		setupMocks    func(repo *cargodomainmock.CargoRepositoryMock, publisher *messagingmock.PublisherMock, cargo *cargodomain.Cargo)
 		expectedError string
 	}{
 		{
@@ -41,11 +43,15 @@ func TestCargoUpdater_Update(t *testing.T) {
 			opts: []cargodomain.CargoUpdateOpt{
 				cargodomain.WithStatus(idProvider.New().String(), "in_transit", now),
 			},
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo) {
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, publisher *messagingmock.PublisherMock, cargo *cargodomain.Cargo) {
 				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return cargo, nil
 				}
 				repo.SaveFunc = func(_ context.Context, _ *cargodomain.Cargo) error {
+					return nil
+				}
+
+				publisher.PublishFunc = func(_ context.Context, _ ...messaging.Message) error {
 					return nil
 				}
 			},
@@ -54,14 +60,14 @@ func TestCargoUpdater_Update(t *testing.T) {
 			name:          "should fail when cargo ID is invalid",
 			id:            "!!!invalid-id###",
 			setupCargo:    func() *cargodomain.Cargo { return nil },
-			setupMocks:    func(_ *cargodomainmock.CargoRepositoryMock, _ *cargodomain.Cargo) {},
+			setupMocks:    func(_ *cargodomainmock.CargoRepositoryMock, _ *messagingmock.PublisherMock, _ *cargodomain.Cargo) {},
 			expectedError: "cargo update failed",
 		},
 		{
 			name:       "should fail when cargo not found",
 			id:         idProvider.New().String(),
 			setupCargo: func() *cargodomain.Cargo { return nil },
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, _ *cargodomain.Cargo) {
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, _ *messagingmock.PublisherMock, _ *cargodomain.Cargo) {
 				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return nil, errors.New("not found")
 				}
@@ -69,7 +75,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 			expectedError: "cargo update failed: not found",
 		},
 		{
-			name: "should skip update when status received is equal",
+			name: "should fail update when status received is equal",
 			id:   idProvider.New().String(),
 			setupCargo: func() *cargodomain.Cargo {
 				return cargotest.NewCargoMother(
@@ -78,7 +84,10 @@ func TestCargoUpdater_Update(t *testing.T) {
 					cargotest.WithTimestamps(now, now),
 				).Build(t)
 			},
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo) {
+			opts: []cargodomain.CargoUpdateOpt{
+				cargodomain.WithStatus(idProvider.New().String(), "pending", now),
+			},
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, publisher *messagingmock.PublisherMock, cargo *cargodomain.Cargo) {
 				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return cargo, nil
 				}
@@ -86,6 +95,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 					return nil
 				}
 			},
+			expectedError: "cargo update failed: status is unchanged",
 		},
 		{
 			name: "should fail when cargo is deleted",
@@ -97,7 +107,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 					cargotest.WithSoftDeletion(time.Now()),
 				).Build(t)
 			},
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo) {
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, _ *messagingmock.PublisherMock, cargo *cargodomain.Cargo) {
 				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return cargo, nil
 				}
@@ -117,7 +127,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 			opts: []cargodomain.CargoUpdateOpt{
 				func(_ *cargodomain.Cargo) error { return errors.New("bad update") },
 			},
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo) {
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, _ *messagingmock.PublisherMock, cargo *cargodomain.Cargo) {
 				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return cargo, nil
 				}
@@ -134,7 +144,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 					cargotest.WithTimestamps(now, now),
 				).Build(t)
 			},
-			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo) {
+			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, _ *messagingmock.PublisherMock, cargo *cargodomain.Cargo) {
 				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return cargo, nil
 				}
@@ -149,12 +159,13 @@ func TestCargoUpdater_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &cargodomainmock.CargoRepositoryMock{}
+			publisher := &messagingmock.PublisherMock{}
 			cargo := tt.setupCargo()
 			if tt.setupMocks != nil {
-				tt.setupMocks(repo, cargo)
+				tt.setupMocks(repo, publisher, cargo)
 			}
 
-			updater := cargodomain.NewCargoUpdater(repo)
+			updater := cargodomain.NewCargoUpdater(repo, publisher)
 			err := updater.Update(ctx, tt.id, tt.opts...)
 
 			if tt.expectedError != "" {

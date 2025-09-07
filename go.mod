@@ -5,7 +5,6 @@ go 1.24.4
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/caarlos0/env/v11 v11.3.1
-	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/go-redsync/redsync/v4 v4.13.0
 	github.com/google/jsonapi v1.0.0
 	github.com/google/uuid v1.6.0
@@ -14,6 +13,7 @@ require (
 	github.com/kinbiko/jsonassert v1.2.0
 	github.com/lib/pq v1.10.9
 	github.com/oklog/ulid/v2 v2.1.1
+	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/redis/go-redis/v9 v9.11.0
 	github.com/rs/zerolog v1.34.0
 	github.com/rubenv/sql-migrate v1.8.0

@@ -5,9 +5,12 @@ import (
 	"time"
 
 	cargotrackingdomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain/tracking"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/domain"
 )
 
 type Cargo struct {
+	*domain.AggregateRoot
+
 	id        CargoID
 	vesselID  VesselID
 	items     Items
@@ -26,14 +29,15 @@ func NewCargo(
 	at time.Time,
 ) *Cargo {
 	cargo := &Cargo{
-		id:        id,
-		vesselID:  vesselID,
-		items:     items,
-		tracking:  make(cargotrackingdomain.Tracking, 0),
-		status:    StatusPending,
-		createdAt: at,
-		updatedAt: at,
-		deletedAt: nil,
+		AggregateRoot: domain.NewAggregateRoot(),
+		id:            id,
+		vesselID:      vesselID,
+		items:         items,
+		tracking:      make(cargotrackingdomain.Tracking, 0),
+		status:        StatusPending,
+		createdAt:     at,
+		updatedAt:     at,
+		deletedAt:     nil,
 	}
 
 	cargo.appendTracking(cargotrackingdomain.NewTrackingOnCargoCreated(trackingID, cargo.status.String(), at))
@@ -53,14 +57,15 @@ func NewCargoFromPrimitives(p CargoPrimitives) *Cargo {
 	}
 
 	return &Cargo{
-		id:        CargoID(p.ID),
-		vesselID:  VesselID(p.VesselID),
-		items:     items,
-		tracking:  trackingItems,
-		status:    Status(p.Status),
-		createdAt: p.CreatedAt,
-		updatedAt: p.UpdatedAt,
-		deletedAt: p.DeletedAt,
+		AggregateRoot: domain.NewAggregateRoot(),
+		id:            CargoID(p.ID),
+		vesselID:      VesselID(p.VesselID),
+		items:         items,
+		tracking:      trackingItems,
+		status:        Status(p.Status),
+		createdAt:     p.CreatedAt,
+		updatedAt:     p.UpdatedAt,
+		deletedAt:     p.DeletedAt,
 	}
 }
 

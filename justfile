@@ -52,17 +52,11 @@ test:
     @echo -e "\n🔍 Running tests..."
     @go test --race ./... -count=1 --timeout=30s
 
-# Run API service locally.
-run-api:
+# Run service locally.
+run:
     @echo -e "\n⚡ Running API..."
     @just install-env && echo -e "\n"
     @go run cmd/api/main.go
-
-# Run consumer service locally.
-run-consumer:
-    @echo -e "\n⚡ Running Consumers..."
-    @just install-env && echo -e "\n"
-    @go run cmd/consumer/main.go
 
 # Start the application components through docker compose.
 up:

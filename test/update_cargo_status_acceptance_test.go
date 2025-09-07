@@ -24,7 +24,8 @@ type UpdateCargoStatusAcceptanceTestSuite struct {
 	vesselModule *di.VesselModule
 	cargoModule  *di.CargoModule
 
-	dbArranger *testarrangers.PostgresSQLArranger
+	dbArranger     *testarrangers.PostgresSQLArranger
+	rabbitArranger *testarrangers.RabbitMQArranger
 
 	vesselID vesseldomain.VesselID
 	cargoID  cargodomain.CargoID
@@ -49,10 +50,14 @@ func (suite *UpdateCargoStatusAcceptanceTestSuite) SetupSuite() {
 	suite.Require().True(match, "expected *postgres.ConnectionPool, got different type")
 
 	suite.dbArranger = testarrangers.NewPostgresSQLArranger(suite.common.Config.PostgresSchema, dbPool)
+
+	topic := suite.common.Config.RabbitMQTopic
+	suite.rabbitArranger = testarrangers.NewRabbitMQArranger(topic, suite.common.RabbitMQConnection)
 }
 
 func (suite *UpdateCargoStatusAcceptanceTestSuite) SetupTest() {
 	suite.dbArranger.MustArrange(suite.T().Context())
+	suite.rabbitArranger.MustArrange(suite.T().Context())
 	suite.common.RedisClient.FlushAll(suite.T().Context())
 
 	vesselID := vesseltest.WithVesselID(suite.vesselID.String())

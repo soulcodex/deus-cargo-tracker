@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"github.com/joho/godotenv"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/soulcodex/deus-cargo-tracker/configs"
 	commandbus "github.com/soulcodex/deus-cargo-tracker/pkg/bus/command"
 	querybus "github.com/soulcodex/deus-cargo-tracker/pkg/bus/query"
 	distributedsync "github.com/soulcodex/deus-cargo-tracker/pkg/distributed-sync"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/domain"
 	httpserver "github.com/soulcodex/deus-cargo-tracker/pkg/http-server"
 	"github.com/soulcodex/deus-cargo-tracker/pkg/logger"
 	"github.com/soulcodex/deus-cargo-tracker/pkg/sqldb"
@@ -23,6 +25,8 @@ type CommonServices struct {
 	ResponseMiddleware *httpserver.JSONAPIResponseMiddleware
 	Logger             logger.ZerologLogger
 	RedisClient        *redis.Client
+	RabbitMQConnection *amqp.Connection
+	EventPublisher     domain.EventPublisher
 	CommandBus         commandbus.Bus
 	QueryBus           querybus.Bus
 	Mutex              distributedsync.MutexService
@@ -65,11 +69,16 @@ func MustInitCommonServices(ctx context.Context) *CommonServices {
 	ulidProvider := utils.NewRandomULIDProvider()
 	responseMiddleware := httpserver.NewJSONAPIResponseMiddleware(appLogger)
 
+	rabbitMQConnection := initRabbitMQConnection(cfg)
+	eventPublisher := initEventPublisher(rabbitMQConnection, cfg)
+
 	return &CommonServices{
 		Config:             cfg,
 		Logger:             appLogger,
 		DBPool:             dbPool,
 		DBMigrator:         dbMigrator,
+		EventPublisher:     eventPublisher,
+		RabbitMQConnection: rabbitMQConnection,
 		ResponseMiddleware: responseMiddleware,
 		RedisClient:        redisClient,
 		QueryBus:           queryBus,

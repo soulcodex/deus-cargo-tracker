@@ -16,6 +16,11 @@ type RedisConfig struct {
 	RedisURL string `env:"URL" envDefault:"redis://localhost:6379"`
 }
 
+type RabbitMQConfig struct {
+	RabbitMQURL   string `env:"URL" envDefault:"amqp://deus_user:deus_pass@localhost:5672/cargo_tracker"`
+	RabbitMQTopic string `env:"TOPIC" envDefault:"cargo_tracker_domain_events"`
+}
+
 type PostgresConfig struct {
 	PostgresUser   string `env:"USER" envDefault:"cargo_tracker_role"`
 	PostgresPass   string `env:"PASSWORD" envDefault:"cargo_tracker_pass"`
@@ -48,6 +53,7 @@ type Config struct {
 	RedisConfig         `envPrefix:"REDIS_"`
 	PostgresConfig      `envPrefix:"POSTGRES_"`
 	DBMigrationsConfig  `envPrefix:"MIGRATIONS_"`
+	RabbitMQConfig      `envPrefix:"RABBITMQ_"`
 	UncategorizedConfig `envPrefix:""`
 }
 

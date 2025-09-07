@@ -27,7 +27,7 @@ func NewCargoModule(_ context.Context, common *CommonServices) *CargoModule {
 	)
 	cargoVesselChecker := cargoinfra.NewQueryBusVesselChecker(common.QueryBus)
 	cargoCreator := cargodomain.NewCargoCreator(cargoRepo, cargoVesselChecker, common.ULIDProvider)
-	cargoUpdater := cargodomain.NewCargoUpdater(cargoRepo)
+	cargoUpdater := cargodomain.NewCargoUpdater(cargoRepo, common.EventPublisher)
 
 	common.Router.Post("/cargoes", createCargoHTTPHandler)
 	common.Router.Get("/cargoes/{cargo_id}", fetchCargoByIDHTTPHandler)
