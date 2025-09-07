@@ -22,6 +22,7 @@ var (
 
 	ErrInvalidStatusProvided      = domainvalidation.NewError("invalid cargo status provided")
 	ErrStatusTransitionNotAllowed = domain.NewError("status transition not allowed")
+	ErrStatusUnchanged            = domain.NewError("status is unchanged")
 )
 
 type Status string
@@ -54,6 +55,10 @@ func (s Status) IsTransitionAllowed(newStatus Status) bool {
 	default:
 		return false
 	}
+}
+
+func (s Status) Equals(other Status) bool {
+	return s == other
 }
 
 func (s Status) String() string {

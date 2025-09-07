@@ -18,16 +18,12 @@ import (
 func TestCargoUpdater_Update(t *testing.T) {
 	ctx := context.Background()
 	idProvider := utils.NewFixedULIDProvider()
-
 	now := time.Now()
-	later := now.Add(1 * time.Hour)
-	earlier := now.Add(-1 * time.Hour)
 
 	tests := []struct {
 		name          string
 		setupCargo    func() *cargodomain.Cargo
 		id            string
-		at            time.Time
 		opts          []cargodomain.CargoUpdateOpt
 		setupMocks    func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo)
 		expectedError string
@@ -35,7 +31,6 @@ func TestCargoUpdater_Update(t *testing.T) {
 		{
 			name: "should update cargo successfully",
 			id:   idProvider.New().String(),
-			at:   later,
 			setupCargo: func() *cargodomain.Cargo {
 				return cargotest.NewCargoMother(
 					cargotest.WithID(idProvider.New().String()),
@@ -43,7 +38,9 @@ func TestCargoUpdater_Update(t *testing.T) {
 					cargotest.WithTimestamps(now, now),
 				).Build(t)
 			},
-			opts: []cargodomain.CargoUpdateOpt{cargodomain.WithStatus("in_transit")},
+			opts: []cargodomain.CargoUpdateOpt{
+				cargodomain.WithStatus(idProvider.New().String(), "in_transit", now),
+			},
 			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo) {
 				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID) (*cargodomain.Cargo, error) {
 					return cargo, nil
@@ -56,7 +53,6 @@ func TestCargoUpdater_Update(t *testing.T) {
 		{
 			name:          "should fail when cargo ID is invalid",
 			id:            "!!!invalid-id###",
-			at:            now,
 			setupCargo:    func() *cargodomain.Cargo { return nil },
 			setupMocks:    func(_ *cargodomainmock.CargoRepositoryMock, _ *cargodomain.Cargo) {},
 			expectedError: "cargo update failed",
@@ -64,7 +60,6 @@ func TestCargoUpdater_Update(t *testing.T) {
 		{
 			name:       "should fail when cargo not found",
 			id:         idProvider.New().String(),
-			at:         now,
 			setupCargo: func() *cargodomain.Cargo { return nil },
 			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, _ *cargodomain.Cargo) {
 				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID) (*cargodomain.Cargo, error) {
@@ -74,9 +69,8 @@ func TestCargoUpdater_Update(t *testing.T) {
 			expectedError: "cargo update failed: not found",
 		},
 		{
-			name: "should skip update when timestamp is older",
+			name: "should skip update when status received is equal",
 			id:   idProvider.New().String(),
-			at:   earlier,
 			setupCargo: func() *cargodomain.Cargo {
 				return cargotest.NewCargoMother(
 					cargotest.WithID(idProvider.New().String()),
@@ -88,7 +82,6 @@ func TestCargoUpdater_Update(t *testing.T) {
 				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID) (*cargodomain.Cargo, error) {
 					return cargo, nil
 				}
-
 				repo.SaveFunc = func(_ context.Context, _ *cargodomain.Cargo) error {
 					return nil
 				}
@@ -97,7 +90,6 @@ func TestCargoUpdater_Update(t *testing.T) {
 		{
 			name: "should fail when cargo is deleted",
 			id:   idProvider.New().String(),
-			at:   later,
 			setupCargo: func() *cargodomain.Cargo {
 				return cargotest.NewCargoMother(
 					cargotest.WithID(idProvider.New().String()),
@@ -115,7 +107,6 @@ func TestCargoUpdater_Update(t *testing.T) {
 		{
 			name: "should fail when update option fails",
 			id:   idProvider.New().String(),
-			at:   later,
 			setupCargo: func() *cargodomain.Cargo {
 				return cargotest.NewCargoMother(
 					cargotest.WithID(idProvider.New().String()),
@@ -136,7 +127,6 @@ func TestCargoUpdater_Update(t *testing.T) {
 		{
 			name: "should fail when save fails",
 			id:   idProvider.New().String(),
-			at:   later,
 			setupCargo: func() *cargodomain.Cargo {
 				return cargotest.NewCargoMother(
 					cargotest.WithID(idProvider.New().String()),
@@ -165,7 +155,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 			}
 
 			updater := cargodomain.NewCargoUpdater(repo)
-			err := updater.Update(ctx, tt.id, tt.at, tt.opts...)
+			err := updater.Update(ctx, tt.id, tt.opts...)
 
 			if tt.expectedError != "" {
 				require.Error(t, err)

@@ -25,9 +25,9 @@ func NewVesselModule(_ context.Context, common *CommonServices) *VesselModule {
 		),
 	)
 
-	fetchVesselByIDHandler := vesselqueries.NewFetchVesselByIDHandler(vesselRepo)
+	fetchVesselByIDHandler := vesselqueries.NewFetchVesselByIDQueryHandler(vesselRepo)
 
-	bus.MustRegister(common.QueryBus, &vesselqueries.FetchVesselByID{}, fetchVesselByIDHandler)
+	bus.MustRegister(common.QueryBus, &vesselqueries.FetchVesselByIDQuery{}, fetchVesselByIDHandler)
 
 	return &VesselModule{
 		Repository: vesselRepo,

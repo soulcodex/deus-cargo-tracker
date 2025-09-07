@@ -2,7 +2,6 @@ package cargodomain
 
 import (
 	"context"
-	"time"
 
 	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 )
@@ -21,7 +20,7 @@ func NewCargoUpdater(repository CargoRepository) *CargoUpdater {
 	}
 }
 
-func (cu *CargoUpdater) Update(ctx context.Context, id string, at time.Time, opts ...CargoUpdateOpt) error {
+func (cu *CargoUpdater) Update(ctx context.Context, id string, opts ...CargoUpdateOpt) error {
 	cargoID, err := NewCargoID(id)
 	if err != nil {
 		return ErrCargoUpdateFailed.Wrap(err)
@@ -32,7 +31,7 @@ func (cu *CargoUpdater) Update(ctx context.Context, id string, at time.Time, opt
 		return ErrCargoUpdateFailed.Wrap(err)
 	}
 
-	if updateErr := cargo.Update(ctx, at, opts...); updateErr != nil {
+	if updateErr := cargo.Update(ctx, opts...); updateErr != nil {
 		return ErrCargoUpdateFailed.Wrap(updateErr)
 	}
 

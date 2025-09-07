@@ -31,6 +31,19 @@ func NewItems(items ...Item) (Items, error) {
 	return items, nil
 }
 
+func newItemsFromRaw(items []struct {
+	Name   string
+	Weight uint64
+}) (Items, error) {
+	var domainItems []Item
+
+	for _, item := range items {
+		domainItems = append(domainItems, newItem(item.Name, item.Weight))
+	}
+
+	return NewItems(domainItems...)
+}
+
 func (i Items) Len() int {
 	return len(i)
 }

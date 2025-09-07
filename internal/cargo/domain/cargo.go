@@ -3,28 +3,42 @@ package cargodomain
 import (
 	"context"
 	"time"
+
+	cargotrackingdomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain/tracking"
 )
 
 type Cargo struct {
 	id        CargoID
 	vesselID  VesselID
 	items     Items
+	tracking  cargotrackingdomain.Tracking
 	status    Status
 	createdAt time.Time
 	updatedAt time.Time
 	deletedAt *time.Time
 }
 
-func NewCargo(id CargoID, vesselID VesselID, items Items, at time.Time) *Cargo {
-	return &Cargo{
+func NewCargo(
+	id CargoID,
+	vesselID VesselID,
+	trackingID cargotrackingdomain.TrackingID,
+	items Items,
+	at time.Time,
+) *Cargo {
+	cargo := &Cargo{
 		id:        id,
 		vesselID:  vesselID,
 		items:     items,
+		tracking:  make(cargotrackingdomain.Tracking, 0),
 		status:    StatusPending,
 		createdAt: at,
 		updatedAt: at,
 		deletedAt: nil,
 	}
+
+	cargo.appendTracking(cargotrackingdomain.NewTrackingOnCargoCreated(trackingID, cargo.status.String(), at))
+
+	return cargo
 }
 
 func NewCargoFromPrimitives(p CargoPrimitives) *Cargo {
@@ -37,6 +51,7 @@ func NewCargoFromPrimitives(p CargoPrimitives) *Cargo {
 		id:        CargoID(p.ID),
 		vesselID:  VesselID(p.VesselID),
 		items:     items,
+		tracking:  make(cargotrackingdomain.Tracking, 0),
 		status:    Status(p.Status),
 		createdAt: p.CreatedAt,
 		updatedAt: p.UpdatedAt,
@@ -56,15 +71,16 @@ func (c *Cargo) VesselID() VesselID {
 	return c.vesselID
 }
 
-func (c *Cargo) Update(
-	_ context.Context,
-	at time.Time,
-	updates ...CargoUpdateOpt,
-) error {
-	if c.updatedAt.After(at) {
-		return nil
+func (c *Cargo) appendTracking(item cargotrackingdomain.TrackingItem) {
+	if c.tracking == nil {
+		c.tracking = make(cargotrackingdomain.Tracking, 0)
 	}
 
+	c.tracking = append(c.tracking, item)
+}
+
+func (c *Cargo) Update(_ context.Context, updates ...CargoUpdateOpt) error {
+	// Prevent updates if cargo is deleted
 	if isDeleted := c.deletedAt != nil; isDeleted {
 		return NewCargoNotModifiableError(c.id, c.status, isDeleted)
 	}

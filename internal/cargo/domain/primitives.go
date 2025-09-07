@@ -2,6 +2,8 @@ package cargodomain
 
 import (
 	"time"
+
+	cargotrackingdomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain/tracking"
 )
 
 type ItemsPrimitives struct {
@@ -25,6 +27,7 @@ type CargoPrimitives struct {
 	ID        string
 	VesselID  string
 	Items     []ItemsPrimitives
+	Tracking  cargotrackingdomain.TrackingPrimitives
 	Status    string
 	Weight    uint64
 	CreatedAt time.Time
@@ -39,6 +42,7 @@ func newCargoPrimitives(c *Cargo) CargoPrimitives {
 		ID:        c.id.String(),
 		VesselID:  c.vesselID.String(),
 		Items:     items,
+		Tracking:  cargotrackingdomain.NewTrackingPrimitives(c.id.String(), c.tracking),
 		Status:    c.status.String(),
 		Weight:    c.items.Weight(),
 		CreatedAt: c.createdAt,

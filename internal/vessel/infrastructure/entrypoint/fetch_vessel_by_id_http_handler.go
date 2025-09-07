@@ -49,12 +49,11 @@ func HandleGETFetchVesselByIDV1HTTP(
 			return
 		}
 
-		query := &vesselqueries.FetchVesselByID{ID: vesselID}
+		query := &vesselqueries.FetchVesselByIDQuery{ID: vesselID}
 
-		result, err := bus.DispatchWithResponse[*vesselqueries.FetchVesselByID, vesselqueries.VesselResponse](queryBus)(
-			r.Context(),
-			query,
-		)
+		result, err := bus.DispatchWithResponse[*vesselqueries.FetchVesselByIDQuery, vesselqueries.VesselResponse](
+			queryBus,
+		)(r.Context(), query)
 
 		switch {
 		case err == nil:

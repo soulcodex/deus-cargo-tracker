@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	cargotrackingdomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain/tracking"
+	"github.com/soulcodex/deus-cargo-tracker/pkg/utils"
 )
 
 type CargoItemInput struct {
@@ -13,18 +16,23 @@ type CargoItemInput struct {
 type CargoCreateInput struct {
 	ID       string
 	VesselID string
-	Items    []CargoItemInput
-	At       time.Time
+	Items    []struct {
+		Name   string
+		Weight uint64
+	}
+	At time.Time
 }
 type CargoCreator struct {
 	repository  CargoRepository
+	idProvider  utils.ULIDProvider
 	vesselCheck CargoVesselChecker
 }
 
-func NewCargoCreator(repository CargoRepository, checker CargoVesselChecker) *CargoCreator {
+func NewCargoCreator(repository CargoRepository, checker CargoVesselChecker, idProvider utils.ULIDProvider) *CargoCreator {
 	return &CargoCreator{
 		repository:  repository,
 		vesselCheck: checker,
+		idProvider:  idProvider,
 	}
 }
 
@@ -52,17 +60,17 @@ func (cc *CargoCreator) Create(ctx context.Context, input CargoCreateInput) (*Ca
 		return nil, NewCargoAlreadyExistsError(id, existing.vesselID)
 	}
 
-	items := make(Items, len(input.Items))
-	for i, itemInput := range input.Items {
-		items[i] = newItem(itemInput.Name, itemInput.Weight)
-	}
-
-	cargoItems, err := NewItems(items...)
+	cargoItems, err := newItemsFromRaw(input.Items)
 	if err != nil {
 		return nil, fmt.Errorf("error creating cargo items: %w", err)
 	}
 
-	cargo := NewCargo(id, vesselID, cargoItems, input.At)
+	trackingID, err := cargotrackingdomain.NewTrackingID(cc.idProvider.New().String())
+	if err != nil {
+		return nil, fmt.Errorf("error creating tracking id: %w", err)
+	}
+
+	cargo := NewCargo(id, vesselID, trackingID, cargoItems, input.At)
 
 	if saveErr := cc.repository.Save(ctx, cargo); saveErr != nil {
 		return nil, fmt.Errorf("error saving cargo: %w", saveErr)

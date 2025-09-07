@@ -26,7 +26,8 @@ func NewCargoModule(_ context.Context, common *CommonServices) *CargoModule {
 		common.ResponseMiddleware,
 	)
 	cargoVesselChecker := cargoinfra.NewQueryBusVesselChecker(common.QueryBus)
-	cargoCreator := cargodomain.NewCargoCreator(cargoRepo, cargoVesselChecker)
+	cargoCreator := cargodomain.NewCargoCreator(cargoRepo, cargoVesselChecker, common.ULIDProvider)
+	cargoUpdater := cargodomain.NewCargoUpdater(cargoRepo)
 
 	common.Router.Post("/cargoes", createCargoHTTPHandler)
 	common.Router.Get("/cargoes/{cargo_id}", fetchCargoByIDHTTPHandler)
@@ -41,7 +42,7 @@ func NewCargoModule(_ context.Context, common *CommonServices) *CargoModule {
 	bus.MustRegister(
 		common.CommandBus,
 		&cargocommands.UpdateCargoStatusCommand{},
-		cargocommands.NewUpdateCargoStatusCommandHandler(cargodomain.NewCargoUpdater(cargoRepo), common.TimeProvider),
+		cargocommands.NewUpdateCargoStatusCommandHandler(cargoUpdater, common.TimeProvider, common.ULIDProvider),
 	)
 
 	bus.MustRegister(

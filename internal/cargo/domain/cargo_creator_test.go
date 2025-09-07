@@ -27,7 +27,10 @@ func TestCargoCreator_Create(t *testing.T) {
 			input: cargodomain.CargoCreateInput{
 				ID:       idProvider.New().String(),
 				VesselID: idProvider.New().String(),
-				Items: []cargodomain.CargoItemInput{
+				Items: []struct {
+					Name   string
+					Weight uint64
+				}{
 					{Name: "Fuel", Weight: 100},
 					{Name: "Supplies", Weight: 50},
 				},
@@ -50,7 +53,10 @@ func TestCargoCreator_Create(t *testing.T) {
 			input: cargodomain.CargoCreateInput{
 				ID:       idProvider.New().String(),
 				VesselID: idProvider.New().String(),
-				Items: []cargodomain.CargoItemInput{
+				Items: []struct {
+					Name   string
+					Weight uint64
+				}{
 					{Name: "Fuel", Weight: 100},
 				},
 				At: timeProvider.Now(),
@@ -67,7 +73,10 @@ func TestCargoCreator_Create(t *testing.T) {
 			input: cargodomain.CargoCreateInput{
 				ID:       "!!!invalid-id###",
 				VesselID: idProvider.New().String(),
-				Items: []cargodomain.CargoItemInput{
+				Items: []struct {
+					Name   string
+					Weight uint64
+				}{
 					{Name: "Fuel", Weight: 100},
 				},
 				At: timeProvider.Now(),
@@ -84,7 +93,10 @@ func TestCargoCreator_Create(t *testing.T) {
 			input: cargodomain.CargoCreateInput{
 				ID:       idProvider.New().String(),
 				VesselID: idProvider.New().String(),
-				Items: []cargodomain.CargoItemInput{
+				Items: []struct {
+					Name   string
+					Weight uint64
+				}{
 					{Name: "Fuel", Weight: 100},
 				},
 				At: timeProvider.Now(),
@@ -104,7 +116,10 @@ func TestCargoCreator_Create(t *testing.T) {
 			input: cargodomain.CargoCreateInput{
 				ID:       idProvider.New().String(),
 				VesselID: idProvider.New().String(),
-				Items: []cargodomain.CargoItemInput{
+				Items: []struct {
+					Name   string
+					Weight uint64
+				}{
 					{Name: "Fuel", Weight: 100},
 				},
 				At: timeProvider.Now(),
@@ -124,7 +139,10 @@ func TestCargoCreator_Create(t *testing.T) {
 			input: cargodomain.CargoCreateInput{
 				ID:       idProvider.New().String(),
 				VesselID: idProvider.New().String(),
-				Items: []cargodomain.CargoItemInput{
+				Items: []struct {
+					Name   string
+					Weight uint64
+				}{
 					{Name: "", Weight: 0},
 				},
 				At: timeProvider.Now(),
@@ -144,7 +162,10 @@ func TestCargoCreator_Create(t *testing.T) {
 			input: cargodomain.CargoCreateInput{
 				ID:       idProvider.New().String(),
 				VesselID: idProvider.New().String(),
-				Items: []cargodomain.CargoItemInput{
+				Items: []struct {
+					Name   string
+					Weight uint64
+				}{
 					{Name: "A", Weight: 100}, {Name: "B", Weight: 100}, {Name: "C", Weight: 100},
 					{Name: "D", Weight: 100}, {Name: "E", Weight: 100}, {Name: "F", Weight: 100},
 					{Name: "G", Weight: 100}, {Name: "H", Weight: 100}, {Name: "I", Weight: 100},
@@ -167,7 +188,10 @@ func TestCargoCreator_Create(t *testing.T) {
 			input: cargodomain.CargoCreateInput{
 				ID:       idProvider.New().String(),
 				VesselID: idProvider.New().String(),
-				Items: []cargodomain.CargoItemInput{
+				Items: []struct {
+					Name   string
+					Weight uint64
+				}{
 					{Name: "Fuel", Weight: 100},
 				},
 				At: timeProvider.Now(),
@@ -196,7 +220,7 @@ func TestCargoCreator_Create(t *testing.T) {
 				tt.setupMocks(repo, checker)
 			}
 
-			creator := cargodomain.NewCargoCreator(repo, checker)
+			creator := cargodomain.NewCargoCreator(repo, checker, idProvider)
 			cargo, err := creator.Create(ctx, tt.input)
 
 			if tt.expectedError != "" {

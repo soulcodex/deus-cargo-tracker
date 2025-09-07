@@ -82,6 +82,22 @@ func (suite *UpdateCargoStatusAcceptanceTestSuite) TestUpdateCargoStatus_Success
 	suite.Equal(http.StatusNoContent, response.Code, "Expected status code 200 OK")
 }
 
+func (suite *UpdateCargoStatusAcceptanceTestSuite) TestUpdateCargoStatus_SuccessWithSameStatus() {
+	body := []byte(fmt.Sprintf(`
+		{
+			"data": {
+				"type": "cargo",
+				"attributes": {
+					"new_status": "%s"
+				}
+			}
+		}
+	`, "pending"))
+	route := fmt.Sprintf("/cargoes/%s/update-status", suite.cargoID.String())
+	response := testutils.ExecuteJSONRequest(suite.T(), suite.common.Router, http.MethodPatch, route, body)
+	suite.Equal(http.StatusNoContent, response.Code, "Expected status code 200 OK")
+}
+
 func (suite *UpdateCargoStatusAcceptanceTestSuite) TestUpdateCargoStatus_FailIfInvalidCargoStatusProvided() {
 	body := []byte(`
 		{

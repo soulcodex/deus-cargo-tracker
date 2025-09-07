@@ -25,7 +25,7 @@ func NewQueryBusVesselChecker(queryBus querybus.Bus) *QueryBusVesselChecker {
 }
 
 func (q *QueryBusVesselChecker) Check(ctx context.Context, vesselID cargodomain.VesselID) error {
-	query := &vesselqueries.FetchVesselByID{ID: vesselID.String()}
+	query := &vesselqueries.FetchVesselByIDQuery{ID: vesselID.String()}
 	err := bus.Dispatch(q.queryBus)(ctx, query)
 	if err != nil {
 		return ErrVesselNotFound.Wrap(err)

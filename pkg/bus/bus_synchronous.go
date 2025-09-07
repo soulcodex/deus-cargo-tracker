@@ -23,12 +23,12 @@ func (sb *SyncBus) Register(dto Dto, handler Handler[any, Dto]) error {
 	defer sb.lock.Unlock()
 	sb.lock.Lock()
 
-	queryName := dto.Type()
-	if _, ok := sb.handlers[queryName]; ok {
+	dtoType := dto.Type()
+	if _, ok := sb.handlers[dtoType]; ok {
 		return newHandlerAlreadyRegistered(dto, handler)
 	}
 
-	sb.handlers[queryName] = handler
+	sb.handlers[dtoType] = handler
 
 	return nil
 }

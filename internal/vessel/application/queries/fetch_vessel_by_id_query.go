@@ -7,25 +7,25 @@ import (
 	vesseldomain "github.com/soulcodex/deus-cargo-tracker/internal/vessel/domain"
 )
 
-type FetchVesselByID struct {
+type FetchVesselByIDQuery struct {
 	ID string
 }
 
-func (q *FetchVesselByID) Type() string {
-	return "fetch_vessel_by_id"
+func (q *FetchVesselByIDQuery) Type() string {
+	return "fetch_vessel_by_id_query"
 }
 
-type FetchVesselByIDHandler struct {
+type FetchVesselByIDQueryHandler struct {
 	repository vesseldomain.VesselRepository
 }
 
-func NewFetchVesselByIDHandler(repository vesseldomain.VesselRepository) *FetchVesselByIDHandler {
-	return &FetchVesselByIDHandler{
+func NewFetchVesselByIDQueryHandler(repository vesseldomain.VesselRepository) *FetchVesselByIDQueryHandler {
+	return &FetchVesselByIDQueryHandler{
 		repository: repository,
 	}
 }
 
-func (h *FetchVesselByIDHandler) Handle(ctx context.Context, q *FetchVesselByID) (VesselResponse, error) {
+func (h *FetchVesselByIDQueryHandler) Handle(ctx context.Context, q *FetchVesselByIDQuery) (VesselResponse, error) {
 	vesselID, err := vesseldomain.NewVesselID(q.ID)
 	if err != nil {
 		return VesselResponse{}, fmt.Errorf("invalid vessel id: %w", err)

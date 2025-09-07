@@ -40,8 +40,11 @@ func (h *CreateCargoCommandHandler) Handle(ctx context.Context, cmd *CreateCargo
 	input := cargodomain.CargoCreateInput{
 		ID:       cmd.ID,
 		VesselID: cmd.VesselID,
-		Items:    h.buildCargoItemInputs(cmd),
-		At:       h.timeProvider.Now(),
+		Items: []struct {
+			Name   string
+			Weight uint64
+		}(cmd.Items),
+		At: h.timeProvider.Now(),
 	}
 
 	if _, err := h.creator.Create(ctx, input); err != nil {
@@ -49,16 +52,4 @@ func (h *CreateCargoCommandHandler) Handle(ctx context.Context, cmd *CreateCargo
 	}
 
 	return struct{}{}, nil
-}
-
-func (h *CreateCargoCommandHandler) buildCargoItemInputs(cmd *CreateCargoCommand) []cargodomain.CargoItemInput {
-	items := make([]cargodomain.CargoItemInput, 0, len(cmd.Items))
-	for _, item := range cmd.Items {
-		items = append(items, cargodomain.CargoItemInput{
-			Name:   item.Name,
-			Weight: item.Weight,
-		})
-	}
-
-	return items
 }
