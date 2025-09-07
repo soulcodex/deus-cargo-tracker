@@ -5,6 +5,7 @@ import (
 	"time"
 
 	cargodomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain"
+	cargotrackingdomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain/tracking"
 )
 
 type CargoMotherOpt func(*CargoMother)
@@ -12,6 +13,12 @@ type CargoMotherOpt func(*CargoMother)
 func WithID(id string) CargoMotherOpt {
 	return func(m *CargoMother) {
 		m.primitives.ID = id
+	}
+}
+
+func WithTracking(tracking cargotrackingdomain.TrackingItemPrimitives) CargoMotherOpt {
+	return func(m *CargoMother) {
+		m.primitives.Tracking = append(m.primitives.Tracking, tracking)
 	}
 }
 
@@ -77,6 +84,8 @@ func newCargoPrimitives() cargodomain.CargoPrimitives {
 				Weight: uint64(itemTwoWeight),
 			},
 		},
+		Tracking:  make(cargotrackingdomain.TrackingPrimitives, 0),
+		Weight:    uint64(itemOneWeight + itemTwoWeight),
 		Status:    cargodomain.StatusPending.String(),
 		CreatedAt: at,
 		UpdatedAt: at,

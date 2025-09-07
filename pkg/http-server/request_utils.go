@@ -3,15 +3,20 @@ package httpserver
 import (
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
 const reverseProxyForwardedByHeader = "X-Forwarded-For"
 
-func FetchStringQueryParamValue(values url.Values, param string, defaultVal string) string {
+func FetchBoolQueryParamValue(values url.Values, param string, defaultVal bool) bool {
 	if queryParamVal := values.Get(param); queryParamVal != "" {
 		if unescapedVal, unescapeErr := url.QueryUnescape(queryParamVal); unescapeErr == nil {
-			return unescapedVal
+			if parsed, parseErr := strconv.ParseBool(unescapedVal); parseErr == nil {
+				return parsed
+			}
+
+			return defaultVal
 		}
 	}
 	return defaultVal

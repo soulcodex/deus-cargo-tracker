@@ -8,7 +8,6 @@ import (
 
 	"github.com/soulcodex/deus-cargo-tracker/configs"
 	commandbus "github.com/soulcodex/deus-cargo-tracker/pkg/bus/command"
-	eventbus "github.com/soulcodex/deus-cargo-tracker/pkg/bus/event"
 	querybus "github.com/soulcodex/deus-cargo-tracker/pkg/bus/query"
 	distributedsync "github.com/soulcodex/deus-cargo-tracker/pkg/distributed-sync"
 	httpserver "github.com/soulcodex/deus-cargo-tracker/pkg/http-server"
@@ -24,7 +23,6 @@ type CommonServices struct {
 	ResponseMiddleware *httpserver.JSONAPIResponseMiddleware
 	Logger             logger.ZerologLogger
 	RedisClient        *redis.Client
-	EventBus           eventbus.Bus
 	CommandBus         commandbus.Bus
 	QueryBus           querybus.Bus
 	Mutex              distributedsync.MutexService
@@ -60,7 +58,6 @@ func MustInitCommonServices(ctx context.Context) *CommonServices {
 	dbPool := initPostgresDBPool(ctx, cfg)
 	dbMigrator := initSQLMigrator(ctx, cfg, dbPool)
 
-	eventBus := eventbus.InitEventBus()
 	queryBus := querybus.InitQueryBus()
 	commandBus := commandbus.InitCommandBus()
 	mutexService := distributedsync.NewRedisMutexService(redisClient, appLogger)
@@ -75,7 +72,6 @@ func MustInitCommonServices(ctx context.Context) *CommonServices {
 		DBMigrator:         dbMigrator,
 		ResponseMiddleware: responseMiddleware,
 		RedisClient:        redisClient,
-		EventBus:           eventBus,
 		QueryBus:           queryBus,
 		CommandBus:         commandBus,
 		Mutex:              mutexService,

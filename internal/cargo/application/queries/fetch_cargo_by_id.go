@@ -8,7 +8,8 @@ import (
 )
 
 type FetchCargoByID struct {
-	ID string
+	ID       string
+	Tracking bool
 }
 
 func (q *FetchCargoByID) Type() string {
@@ -31,7 +32,12 @@ func (h *FetchCargoByIDHandler) Handle(ctx context.Context, q *FetchCargoByID) (
 		return CargoResponse{}, fmt.Errorf("invalid cargo id: %w", err)
 	}
 
-	cargo, err := h.repository.Find(ctx, cargoID)
+	opts := make([]cargodomain.CargoFindingOpt, 0)
+	if q.Tracking {
+		opts = append(opts, cargodomain.WithTracking())
+	}
+
+	cargo, err := h.repository.Find(ctx, cargoID, opts...)
 	if err != nil {
 		return CargoResponse{}, fmt.Errorf("error fetching cargo: %w", err)
 	}

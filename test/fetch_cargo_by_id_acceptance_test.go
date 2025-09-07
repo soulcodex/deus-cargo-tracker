@@ -10,6 +10,7 @@ import (
 
 	"github.com/soulcodex/deus-cargo-tracker/cmd/di"
 	cargodomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain"
+	cargotrackingdomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain/tracking"
 	vesseldomain "github.com/soulcodex/deus-cargo-tracker/internal/vessel/domain"
 	"github.com/soulcodex/deus-cargo-tracker/pkg/sqldb/postgres"
 	testarrangers "github.com/soulcodex/deus-cargo-tracker/test/arrangers"
@@ -99,6 +100,80 @@ func (suite *FetchCargoByIDAcceptanceTestSuite) TestFetchCargoByID_Success() {
 		suite.common.Router,
 		http.MethodGet,
 		"/cargoes/"+suite.cargo.ID().String(),
+		body,
+	)
+	testutils.CheckResponse(suite.T(), http.StatusOK, string(body), response)
+}
+
+func (suite *FetchCargoByIDAcceptanceTestSuite) TestFetchCargoByID_SuccessWithTracking() {
+	trackingItem := cargotrackingdomain.NewTrackingOnCargoCreated(
+		cargotrackingdomain.TrackingID(suite.common.ULIDProvider.New().String()),
+		cargodomain.StatusPending.String(),
+		suite.common.TimeProvider.Now(),
+	)
+
+	cargoID, vesselID := suite.common.ULIDProvider.New().String(), suite.vesselID.String()
+	tracking := cargotest.WithTracking(cargotrackingdomain.NewTrackingItemPrimitives(cargoID, trackingItem))
+
+	cargo := cargotest.NewCargoMother(cargotest.WithID(cargoID), cargotest.WithVesselID(vesselID), tracking).Build(suite.T())
+	saveCargoErr := suite.cargoModule.Repository.Save(suite.T().Context(), cargo)
+	suite.Require().NoError(saveCargoErr, "failed to save cargo for suite setup")
+	primitives := cargo.Primitives()
+
+	params := []any{
+		primitives.ID,
+		primitives.VesselID,
+		primitives.CreatedAt.Format(time.RFC3339),
+		primitives.UpdatedAt.Format(time.RFC3339),
+		primitives.Tracking[0].ID,
+		primitives.Tracking[0].ID,
+		primitives.Tracking[0].CreatedAt.Format(time.RFC3339),
+	}
+
+	body := []byte(fmt.Sprintf(`
+		{
+			"data": {
+				"id": "%s",
+				"type": "cargo",
+				"attributes": {
+					"vessel_id": "%s",
+					"weight": 3500,
+					"status": "pending",
+					"items": [
+						{"name": "Electronics", "weight": 1500},
+						{"name": "Clothing", "weight": 2000}
+					],
+					"created_at": "%s",
+					"updated_at": "%s"
+				},
+				"relationships" : {
+				  "tracking" : {
+					"data" : [ {
+					  "type" : "tracking",
+					  "id" : "%s"
+					} ]
+				  }
+				}
+			},
+			"included": [
+				{
+    				"type" : "tracking",
+    				"id" : "%s",
+					"attributes" : {
+					  "created_at" : "%s",
+					  "entry_type" : "cargo.created",
+					  "status_after" : "pending",
+					  "status_before" : "pending"
+					}
+				}
+			]
+		}
+	`, params...))
+	response := testutils.ExecuteJSONRequest(
+		suite.T(),
+		suite.common.Router,
+		http.MethodGet,
+		"/cargoes/"+primitives.ID+"?tracking=true",
 		body,
 	)
 	testutils.CheckResponse(suite.T(), http.StatusOK, string(body), response)
