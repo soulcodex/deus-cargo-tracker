@@ -1,0 +1,301 @@
+openapi: 3.0.3
+info:
+  title: DEUS Cargo Tracking API
+  version: 1.0.0
+  description: API for managing cargo tracking and vessel assignments.
+
+paths:
+  /vessels/{vessel_id}:
+    get:
+      tags: [Vessel]
+      summary: Retrieve a vessel detail by its identifier
+      parameters:
+        - name: vessel_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Vessel found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/VesselResponse'
+        '404':
+          description: Vessel not found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Bad request
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cargoes:
+    post:
+      tags: [Cargo]
+      summary: Create a new cargo assigning it to a vessel
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/CargoCreateRequest'
+      responses:
+        '204':
+          description: Cargo created successfully
+        '400':
+          description: Invalid input
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Vessel not found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict in cargo creation
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cargoes/{cargo_id}/update-status:
+    patch:
+      tags: [Cargo]
+      summary: Update the cargo status
+      parameters:
+        - name: cargo_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/CargoStatusUpdateRequest'
+      responses:
+        '204':
+          description: Cargo status updated successfully
+        '400':
+          description: Invalid input
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cargo not found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Invalid status transition
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cargoes/{cargo_id}:
+    get:
+      tags: [Cargo]
+      summary: Retrieve a cargo details with or without its tracking
+      parameters:
+        - name: cargo_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tracking
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Cargo found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/CargoResponse'
+        '400':
+          description: Cargo not found
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    VesselResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            type:
+              type: string
+              example: vessel
+            id:
+              type: string
+            attributes:
+              type: object
+              properties:
+                name:
+                  type: string
+                capacity:
+                  type: number
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                created_at:
+                  type: string
+                  format: date-time
+                updated_at:
+                  type: string
+                  format: date-time
+
+    CargoCreateRequest:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            type:
+              type: string
+              example: cargo
+            attributes:
+              type: object
+              properties:
+                vessel_id:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      weight:
+                        type: number
+
+    CargoStatusUpdateRequest:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            type:
+              type: string
+              example: cargo
+            attributes:
+              type: object
+              properties:
+                new_status:
+                  type: string
+
+    CargoResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            type:
+              type: string
+              example: cargo
+            id:
+              type: string
+            attributes:
+              type: object
+              properties:
+                created_at:
+                  type: string
+                  format: date-time
+                updated_at:
+                  type: string
+                  format: date-time
+                status:
+                  type: string
+                vessel_id:
+                  type: string
+                weight:
+                  type: number
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      weight:
+                        type: number
+            relationships:
+              type: object
+              properties:
+                tracking:
+                  type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: tracking
+                          id:
+                            type: string
+        included:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                example: tracking
+              id:
+                type: string
+              attributes:
+                type: object
+                properties:
+                  created_at:
+                    type: string
+                    format: date-time
+                  entry_type:
+                    type: string
+                  status_before:
+                    type: string
+                  status_after:
+                    type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              title:
+                type: string
+              detail:
+                type: string
+              status:
+                type: string
+              code:
+                type: string

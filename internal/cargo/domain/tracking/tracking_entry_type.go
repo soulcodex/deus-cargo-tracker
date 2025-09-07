@@ -1,8 +1,8 @@
 package cargotrackingdomain
 
 const (
-	TrackingEntryTypeCreated       TrackingEntryType = "cargo.created"
-	TrackingEntryTypeStatusChanged TrackingEntryType = "cargo.status_changed"
+	trackingEntryTypeCreated       TrackingEntryType = "cargo.created"
+	trackingEntryTypeStatusChanged TrackingEntryType = "cargo.status_changed"
 )
 
 type TrackingEntryType string

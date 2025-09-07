@@ -31,7 +31,7 @@ func NewTrackingItemFromPrimitives(p TrackingItemPrimitives) TrackingItem {
 func NewTrackingOnCargoCreated(trackingID TrackingID, cargoStatus string, createdAt time.Time) TrackingItem {
 	return TrackingItem{
 		id:           trackingID,
-		entryType:    TrackingEntryTypeCreated,
+		entryType:    trackingEntryTypeCreated,
 		createdAt:    createdAt,
 		statusBefore: &cargoStatus,
 		statusAfter:  &cargoStatus,
@@ -45,7 +45,7 @@ func NewTrackingOnCargoStatusChanged(
 ) TrackingItem {
 	return TrackingItem{
 		id:           id,
-		entryType:    TrackingEntryTypeStatusChanged,
+		entryType:    trackingEntryTypeStatusChanged,
 		createdAt:    createdAt,
 		statusBefore: &statusBefore,
 		statusAfter:  &statusAfter,
