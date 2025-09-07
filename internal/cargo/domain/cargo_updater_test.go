@@ -42,7 +42,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 				cargodomain.WithStatus(idProvider.New().String(), "in_transit", now),
 			},
 			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo) {
-				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return cargo, nil
 				}
 				repo.SaveFunc = func(_ context.Context, _ *cargodomain.Cargo) error {
@@ -62,7 +62,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 			id:         idProvider.New().String(),
 			setupCargo: func() *cargodomain.Cargo { return nil },
 			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, _ *cargodomain.Cargo) {
-				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return nil, errors.New("not found")
 				}
 			},
@@ -79,7 +79,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 				).Build(t)
 			},
 			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo) {
-				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return cargo, nil
 				}
 				repo.SaveFunc = func(_ context.Context, _ *cargodomain.Cargo) error {
@@ -98,7 +98,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 				).Build(t)
 			},
 			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo) {
-				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return cargo, nil
 				}
 			},
@@ -118,7 +118,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 				func(_ *cargodomain.Cargo) error { return errors.New("bad update") },
 			},
 			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo) {
-				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return cargo, nil
 				}
 			},
@@ -135,7 +135,7 @@ func TestCargoUpdater_Update(t *testing.T) {
 				).Build(t)
 			},
 			setupMocks: func(repo *cargodomainmock.CargoRepositoryMock, cargo *cargodomain.Cargo) {
-				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(_ context.Context, _ cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return cargo, nil
 				}
 				repo.SaveFunc = func(_ context.Context, _ *cargodomain.Cargo) error {

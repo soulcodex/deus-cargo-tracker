@@ -19,7 +19,7 @@ var _ cargodomain.CargoRepository = &CargoRepositoryMock{}
 //
 //		// make and configure a mocked cargodomain.CargoRepository
 //		mockedCargoRepository := &CargoRepositoryMock{
-//			FindFunc: func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
+//			FindFunc: func(ctx context.Context, id cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 //				panic("mock out the Find method")
 //			},
 //			SaveFunc: func(ctx context.Context, c *cargodomain.Cargo) error {
@@ -33,7 +33,7 @@ var _ cargodomain.CargoRepository = &CargoRepositoryMock{}
 //	}
 type CargoRepositoryMock struct {
 	// FindFunc mocks the Find method.
-	FindFunc func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error)
+	FindFunc func(ctx context.Context, id cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error)
 
 	// SaveFunc mocks the Save method.
 	SaveFunc func(ctx context.Context, c *cargodomain.Cargo) error
@@ -46,6 +46,8 @@ type CargoRepositoryMock struct {
 			Ctx context.Context
 			// ID is the id argument value.
 			ID cargodomain.CargoID
+			// Opts is the opts argument value.
+			Opts []cargodomain.CargoFindingOpt
 		}
 		// Save holds details about calls to the Save method.
 		Save []struct {
@@ -60,21 +62,23 @@ type CargoRepositoryMock struct {
 }
 
 // Find calls FindFunc.
-func (mock *CargoRepositoryMock) Find(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
+func (mock *CargoRepositoryMock) Find(ctx context.Context, id cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 	if mock.FindFunc == nil {
 		panic("CargoRepositoryMock.FindFunc: method is nil but CargoRepository.Find was just called")
 	}
 	callInfo := struct {
-		Ctx context.Context
-		ID  cargodomain.CargoID
+		Ctx  context.Context
+		ID   cargodomain.CargoID
+		Opts []cargodomain.CargoFindingOpt
 	}{
-		Ctx: ctx,
-		ID:  id,
+		Ctx:  ctx,
+		ID:   id,
+		Opts: opts,
 	}
 	mock.lockFind.Lock()
 	mock.calls.Find = append(mock.calls.Find, callInfo)
 	mock.lockFind.Unlock()
-	return mock.FindFunc(ctx, id)
+	return mock.FindFunc(ctx, id, opts...)
 }
 
 // FindCalls gets all the calls that were made to Find.
@@ -82,12 +86,14 @@ func (mock *CargoRepositoryMock) Find(ctx context.Context, id cargodomain.CargoI
 //
 //	len(mockedCargoRepository.FindCalls())
 func (mock *CargoRepositoryMock) FindCalls() []struct {
-	Ctx context.Context
-	ID  cargodomain.CargoID
+	Ctx  context.Context
+	ID   cargodomain.CargoID
+	Opts []cargodomain.CargoFindingOpt
 } {
 	var calls []struct {
-		Ctx context.Context
-		ID  cargodomain.CargoID
+		Ctx  context.Context
+		ID   cargodomain.CargoID
+		Opts []cargodomain.CargoFindingOpt
 	}
 	mock.lockFind.RLock()
 	calls = mock.calls.Find

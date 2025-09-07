@@ -13,7 +13,7 @@ var (
 	ErrScanningVesselRow = errutil.NewError("error scanning vessel row")
 )
 
-func NewPostgresVesselDecoder() postgres.DecodeFunc[*vesseldomain.Vessel] {
+func newPostgresVesselDecoder() postgres.DecodeFunc[*vesseldomain.Vessel] {
 	return func(rows *sql.Rows) (*vesseldomain.Vessel, error) {
 		var (
 			id           string

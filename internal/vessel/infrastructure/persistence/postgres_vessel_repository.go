@@ -36,7 +36,7 @@ func NewPostgresVesselRepository(schema string, pool sqldb.ConnectionPool) *Post
 	return &PostgresVesselRepository{
 		tableName: schema + "." + "vessels",
 		pool:      pool,
-		decoder:   NewPostgresVesselDecoder(),
+		decoder:   newPostgresVesselDecoder(),
 		fields: []string{
 			"id",
 			"name",

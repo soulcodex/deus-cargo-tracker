@@ -40,7 +40,7 @@ func TestCargoCreator_Create(t *testing.T) {
 				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
 					return nil
 				}
-				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return nil, nil
 				}
 				repo.SaveFunc = func(ctx context.Context, c *cargodomain.Cargo) error {
@@ -105,7 +105,7 @@ func TestCargoCreator_Create(t *testing.T) {
 				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
 					return nil
 				}
-				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return &cargodomain.Cargo{}, nil
 				}
 			},
@@ -128,7 +128,7 @@ func TestCargoCreator_Create(t *testing.T) {
 				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
 					return nil
 				}
-				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return nil, errors.New("db lookup failed")
 				}
 			},
@@ -151,7 +151,7 @@ func TestCargoCreator_Create(t *testing.T) {
 				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
 					return nil
 				}
-				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return nil, nil
 				}
 			},
@@ -177,7 +177,7 @@ func TestCargoCreator_Create(t *testing.T) {
 				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
 					return nil
 				}
-				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return nil, nil
 				}
 			},
@@ -200,7 +200,7 @@ func TestCargoCreator_Create(t *testing.T) {
 				checker.CheckFunc = func(ctx context.Context, id cargodomain.VesselID) error {
 					return nil
 				}
-				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
+				repo.FindFunc = func(ctx context.Context, id cargodomain.CargoID, opts ...cargodomain.CargoFindingOpt) (*cargodomain.Cargo, error) {
 					return nil, nil
 				}
 				repo.SaveFunc = func(ctx context.Context, c *cargodomain.Cargo) error {

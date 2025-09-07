@@ -47,11 +47,16 @@ func NewCargoFromPrimitives(p CargoPrimitives) *Cargo {
 		items[i] = newItem(item.Name, item.Weight)
 	}
 
+	trackingItems := make(cargotrackingdomain.Tracking, len(p.Tracking))
+	for i, t := range p.Tracking {
+		trackingItems[i] = cargotrackingdomain.NewTrackingItemFromPrimitives(t)
+	}
+
 	return &Cargo{
 		id:        CargoID(p.ID),
 		vesselID:  VesselID(p.VesselID),
 		items:     items,
-		tracking:  make(cargotrackingdomain.Tracking, 0),
+		tracking:  trackingItems,
 		status:    Status(p.Status),
 		createdAt: p.CreatedAt,
 		updatedAt: p.UpdatedAt,
@@ -69,6 +74,10 @@ func (c *Cargo) ID() CargoID {
 
 func (c *Cargo) VesselID() VesselID {
 	return c.vesselID
+}
+
+func (c *Cargo) Tracking() cargotrackingdomain.Tracking {
+	return c.tracking
 }
 
 func (c *Cargo) appendTracking(item cargotrackingdomain.TrackingItem) {

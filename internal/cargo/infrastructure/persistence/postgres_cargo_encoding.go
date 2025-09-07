@@ -6,6 +6,7 @@ import (
 	"time"
 
 	cargodomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain"
+	cargotrackingdomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain/tracking"
 	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 	"github.com/soulcodex/deus-cargo-tracker/pkg/sqldb/postgres"
 )
@@ -15,7 +16,7 @@ var (
 	ErrInvalidCargoEncoding = errutil.NewError("invalid cargo provided on encoding")
 )
 
-func NewPostgresCargoDecoder() postgres.DecodeFunc[*cargodomain.Cargo] {
+func newPostgresCargoDecoder(tracking cargotrackingdomain.Tracking) postgres.DecodeFunc[*cargodomain.Cargo] {
 	return func(rows *sql.Rows) (*cargodomain.Cargo, error) {
 		var (
 			id           string
@@ -50,6 +51,7 @@ func NewPostgresCargoDecoder() postgres.DecodeFunc[*cargodomain.Cargo] {
 			ID:        id,
 			VesselID:  vesselID,
 			Items:     cargoItems,
+			Tracking:  cargotrackingdomain.NewTrackingPrimitives(id, tracking),
 			Status:    status,
 			CreatedAt: createdAt,
 			UpdatedAt: updatedAt,
@@ -60,7 +62,7 @@ func NewPostgresCargoDecoder() postgres.DecodeFunc[*cargodomain.Cargo] {
 	}
 }
 
-func NewPostgresCargoEncoder() postgres.EncodeFunc[*cargodomain.Cargo] {
+func newPostgresCargoEncoder() postgres.EncodeFunc[*cargodomain.Cargo] {
 	return func(cargo *cargodomain.Cargo) ([]any, error) {
 		if cargo == nil {
 			return nil, ErrInvalidCargoEncoding

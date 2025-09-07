@@ -15,15 +15,19 @@ type TrackingItemPrimitives struct {
 }
 
 func NewTrackingPrimitives(cargoID string, items Tracking) TrackingPrimitives {
+	if len(items) == 0 {
+		return make(TrackingPrimitives, 0)
+	}
+
 	primitives := make(TrackingPrimitives, len(items))
 	for i, item := range items {
-		primitives[i] = newTrackingPrimitives(cargoID, item)
+		primitives[i] = NewTrackingItemPrimitives(cargoID, item)
 	}
 
 	return primitives
 }
 
-func newTrackingPrimitives(cargoID string, t TrackingItem) TrackingItemPrimitives {
+func NewTrackingItemPrimitives(cargoID string, t TrackingItem) TrackingItemPrimitives {
 	var statusBefore, statusAfter *string
 
 	if t.statusBefore != nil {

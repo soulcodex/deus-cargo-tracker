@@ -7,6 +7,7 @@ import (
 	"github.com/lib/pq"
 
 	cargodomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain"
+	cargotrackingdomain "github.com/soulcodex/deus-cargo-tracker/internal/cargo/domain/tracking"
 	"github.com/soulcodex/deus-cargo-tracker/pkg/errutil"
 	"github.com/soulcodex/deus-cargo-tracker/pkg/sqldb"
 	"github.com/soulcodex/deus-cargo-tracker/pkg/sqldb/postgres"
@@ -23,10 +24,11 @@ var (
 type PostgresCargoRepository struct {
 	tableName    string
 	pool         sqldb.ConnectionPool
-	decoder      postgres.DecodeFunc[*cargodomain.Cargo]
 	encoder      postgres.EncodeFunc[*cargodomain.Cargo]
 	errorHandler *postgres.ErrorHandler
 	fields       []string
+
+	trackingRepo *postgresCargoTrackingRepository
 }
 
 func NewPostgresCargoRepository(schema string, pool sqldb.ConnectionPool) *PostgresCargoRepository {
@@ -37,8 +39,7 @@ func NewPostgresCargoRepository(schema string, pool sqldb.ConnectionPool) *Postg
 	return &PostgresCargoRepository{
 		tableName: schema + "." + "cargoes",
 		pool:      pool,
-		decoder:   NewPostgresCargoDecoder(),
-		encoder:   NewPostgresCargoEncoder(),
+		encoder:   newPostgresCargoEncoder(),
 		fields: []string{
 			"id",
 			"vessel_id",
@@ -49,10 +50,17 @@ func NewPostgresCargoRepository(schema string, pool sqldb.ConnectionPool) *Postg
 			"deleted_at",
 		},
 		errorHandler: postgres.NewErrorHandler(errorHandlers),
+		trackingRepo: newPostgresCargoTrackingRepository(schema, pool),
 	}
 }
 
-func (r *PostgresCargoRepository) Find(ctx context.Context, id cargodomain.CargoID) (*cargodomain.Cargo, error) {
+func (r *PostgresCargoRepository) Find(
+	ctx context.Context,
+	id cargodomain.CargoID,
+	opts ...cargodomain.CargoFindingOpt,
+) (*cargodomain.Cargo, error) {
+	options := cargodomain.NewCargoFindingOptions(opts...)
+
 	rows, err := r.cargoSelectBuilder(1, sq.Eq{"id": id}).RunWith(r.pool.Reader()).QueryContext(ctx)
 	if err != nil {
 		return nil, ErrRunningQuery.Wrap(err)
@@ -67,7 +75,15 @@ func (r *PostgresCargoRepository) Find(ctx context.Context, id cargodomain.Cargo
 		return nil, ErrFetchingCargoRows.Wrap(rowsErr)
 	}
 
-	v, err := r.decoder(rows)
+	tracking := cargotrackingdomain.NewEmptyTracking()
+	if options.WithTracking {
+		tracking, err = r.trackingRepo.findByCargoID(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	v, err := newPostgresCargoDecoder(tracking)(rows)
 	if err != nil {
 		return nil, ErrFetchingCargoRows.Wrap(err)
 	}
@@ -76,6 +92,11 @@ func (r *PostgresCargoRepository) Find(ctx context.Context, id cargodomain.Cargo
 }
 
 func (r *PostgresCargoRepository) Save(ctx context.Context, c *cargodomain.Cargo) error {
+	tx, txErr := r.pool.Writer().BeginTx(ctx, nil)
+	if txErr != nil {
+		return ErrSavingCargo.Wrap(txErr)
+	}
+
 	bindings, bindingsErr := r.encoder(c)
 	if bindingsErr != nil {
 		return ErrSavingCargo.Wrap(bindingsErr)
@@ -91,13 +112,25 @@ func (r *PostgresCargoRepository) Save(ctx context.Context, c *cargodomain.Cargo
 			"deleted_at = EXCLUDED.deleted_at",
 		).PlaceholderFormat(sq.Dollar)
 
-	_, err := query.RunWith(r.pool.Writer()).ExecContext(ctx)
+	_, err := query.RunWith(tx).ExecContext(ctx)
 	if err != nil {
 		if pgError, match := postgres.IsPostgresError(err); match {
 			return ErrSavingCargo.Wrap(r.errorHandler.Handle(c, pgError))
 		}
 
 		return ErrSavingCargo.Wrap(err)
+	}
+
+	if saveTrackingErr := r.trackingRepo.save(ctx, tx, c.ID(), c.Tracking()); saveTrackingErr != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return ErrSavingCargo.Wrap(rbErr)
+		}
+
+		return ErrSavingCargo.Wrap(saveTrackingErr)
+	}
+
+	if commitErr := tx.Commit(); commitErr != nil {
+		return ErrSavingCargo.Wrap(commitErr)
 	}
 
 	return nil
